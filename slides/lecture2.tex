@@ -1,0 +1,285 @@
+\documentclass[handout,aspectratio=169]{beamer}
+\usetheme{default}
+
+\usepackage{amsmath,amssymb}
+
+
+\newcommand{\pitem}{\pause\item}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\newenvironment{sol}{%
+\begin{block}{}%
+\setbeamercolor{block body}{bg=lightgray}%
+}{
+\end{block}}
+
+ \AtBeginSection[]{
+       \begin{frame}
+           \vfill
+           \centering
+           \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+                 \usebeamerfont{title}\insertsectionhead\par%
+               \end{beamercolorbox}
+           \vfill
+           \end{frame}
+     }
+
+
+
+\title{Information Theory}
+\author{Alexander Smal at NUP}
+\date{16.10.2024.\\ Lecture 2}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Probabilistic approach}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Shannon Entropy}
+Shannon entropy defines the amount of information \(H(\alpha)\) in the probability distribution for a random variable \(\alpha\).
+\medskip\pause
+
+Let \(\alpha\) take values from the set \(\{\seqn{a}{k}\}\) with probabilities \(\{\seqn{p}{k}\}\), where \(p_i \ge 0\) and \(\sum_i p_i = 1\).
+\medskip\pause
+
+We would like this definition to be consistent with Hartley's definition, i.e., the following ``boundary conditions'' hold:
+\begin{itemize}
+    \item if \(p_1 = \dotsb = p_k\), then \(H(\alpha) = \log k\),
+    \item if \(p_1 = 1\), \(p_2 = \dotsb = p_k = 0\), then \(H(\alpha) = 0\).
+\end{itemize}
+\medskip\pause
+
+We will look for \(H(\alpha)\) in the form of the expected value of the information we obtain from each outcome.
+\[
+H(\alpha) = \sum_i p_i \cdot \text{(information in $a_i$)}.
+\]
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Shannon's Formula}
+\begin{definition}[Shannon, 1948]
+    The Shannon entropy of a random variable \(\alpha\) is given by
+    \[
+    H(\alpha) = \sum_{i=1}^k p_i \cdot \log \frac{1}{p_i}.
+    \]
+    (For continuity, we define \(0 \cdot \log \frac{0}{0} = 0\).)
+    \end{definition}
+    \medskip\pause
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties}
+    \begin{lemma}\label{lm:entropy-properties}
+    The following relations hold for Shannon entropy.
+    \begin{itemize}
+        \item \(H(\alpha) \ge 0\), and \(H(\alpha) = 0\) \(\iff\) the distribution of \(\alpha\) is degenerate.
+
+        \item \(H(\alpha) \le \log k\), and \(H(\alpha) = \log k\) \(\iff\) the variable \(\alpha\) is uniformly distributed.
+
+    \end{itemize}
+\end{lemma}
+\medskip\pause
+
+To prove this, we will need the following theorem.
+
+\begin{theorem}[Jensen's Inequality]
+    Let the function \(f(x)\) be concave on some interval \(\mathcal{X}\) and let the numbers \(\seqn{q}{n} > 0\) be such that \(q_1 + \dotsb + q_n = 1\). Then for any \(\seqn{x}{n}\) from the interval \(\mathcal{X}\), the inequality holds:
+    \[
+    \sum_{i=1}^{n} q_{i} f(x_{i}) \leq f\left(\sum_{i=1}^{n} q_{i} x_{i}\right).
+    \]
+\end{theorem}
+
+
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties: proof}
+        \begin{lemma}\label{lm:entropy-properties}
+        The following relations hold for Shannon entropy.
+        \begin{itemize}
+            \item \(H(\alpha) \ge 0\), and \(H(\alpha) = 0\) \(\iff\) the distribution of \(\alpha\) is degenerate.
+
+            \item \(H(\alpha) \le \log k\), and \(H(\alpha) = \log k\) \(\iff\) the variable \(\alpha\) is uniformly distributed.
+
+        \end{itemize}
+    \end{lemma}
+    \begin{proof}
+        The first property follows directly from the definition: each term in the sum \(H(\alpha)\) is non-negative and equals zero if and only if \(p_i = 0\) or \(p_i = 1\).
+
+        To prove the second inequality, we will move everything to the left side and apply Jensen's inequality:
+        \[
+        H(\alpha) - \log k
+        = \sum_{i=1}^k p_i \cdot \log \frac{1}{p_i} - \sum_{i=1}^k p_i \cdot \log k
+        = \sum_{i=1}^k p_i \cdot \log \frac{1}{p_i k}
+        \le \log\sum_{i=1}^k p_i \frac{1}{p_i k} = \log 1 = 0.
+        \]
+    \end{proof}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Entropy of a pair}
+\begin{definition}
+    The entropy of the joint distribution of the pair of random variables \(\alpha\) and \(\beta\) is \(H(\alpha, \beta)\).
+\end{definition}
+
+\begin{lemma}
+    \begin{itemize}
+        \item \(H(\alpha, \beta) \le H(\alpha) + H(\beta)\), equality iff the random variables are independent;
+        \item \(H(\alpha) \le H(\alpha, \beta)\), equality iff \(\beta = f(\alpha)\).
+    \end{itemize}
+\end{lemma}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Conditional Entropy}
+\begin{definition}\label{def:cond-entropy1}
+    The entropy of \(\alpha\) given \(\beta = b_j\) is defined as
+    \[
+    H(\alpha\mid\beta = b_j) = \sum_i \Pr[\alpha = a_i\mid \beta = b_j] \cdot
+    \log\frac{1}{\Pr[\alpha = a_i\mid \beta = b_j]}.
+    \]
+\end{definition}
+\vspace{-5mm}
+
+\begin{definition}\label{def:cond-entropy2}
+    The \emph{conditional (relative) entropy} of \(\alpha\) with respect to \(\beta\) is given by
+    \[
+    H(\alpha\mid\beta) = \sum_j \Pr[\beta = b_j] \cdot H(\alpha\mid \beta = b_j).
+    \]
+    In other words,
+    \[
+    H(\alpha\mid\beta) = \E\limits_{b_j \gets \beta}[H(\alpha\mid \beta = b_j)].
+    \]
+\end{definition}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties}
+\begin{lemma}
+    The conditional entropy has the following properties:
+    \begin{itemize}
+        \item \(H(\alpha\mid\beta) \ge 0\).
+        \item \(H(\alpha\mid\beta) = 0\) \(\iff\) \(\alpha\) is uniquely determined by \(\beta\).
+        \item \(H(\alpha,\beta) = H(\beta) + H(\alpha\mid\beta) = H(\alpha) + H(\beta\mid\alpha)\).
+    \end{itemize}
+\end{lemma}
+\medskip\pause
+
+\begin{corollary}
+    \(H(\alpha \mid \beta) \le H(\alpha)\), equality iff $\alpha$ and $\beta$ are independent.
+\end{corollary}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Mutual Information}
+\begin{definition}
+    The \emph{information in \(\alpha\) about the variable \(\beta\)} is defined as:
+    \[
+    I(\alpha:\beta) = H(\beta) - H(\beta\mid\alpha).
+    \]
+    It is also referred to as the \emph{mutual information of the random variables \(\alpha\) and \(\beta\)}.
+\end{definition}
+
+\begin{lemma}
+    The following relations hold for mutual information:
+    \begin{enumerate}
+        \item \(I(\alpha:\beta) \le H(\alpha)\).
+        \item \(I(\alpha:\beta) \le H(\beta)\).
+        \item \(I(\alpha:\alpha) = H(\alpha)\).
+        \item \(I(\alpha:\beta) = I(\beta:\alpha)\).
+        \item \(I(\alpha:\beta) = H(\alpha) + H(\beta) - H(\alpha,\beta)\).
+    \end{enumerate}
+\end{lemma}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Conditional Mutual Information}
+\begin{definition}
+    The \emph{information in \(\alpha\) about \(\beta\) given \(\gamma\)} is define as follows:
+    \begin{enumerate}
+        \item \(I(\alpha:\beta\mid\gamma) = H(\beta\mid\gamma) - H(\beta\mid\alpha,\gamma)\).
+        \item \(I(\alpha:\beta\mid\gamma) = \sum_\ell I(\alpha:\beta \mid \gamma = c_\ell) \cdot \Pr[\gamma = c_\ell]\).
+        \item \(I(\alpha:\beta\mid\gamma) = H(\alpha\mid\gamma) + H(\beta\mid\gamma) - H(\alpha,\beta\mid\gamma)\).
+        \item \(I(\alpha:\beta\mid\gamma) = H(\alpha,\gamma) + H(\beta,\gamma) - H(\alpha,\beta,\gamma) - H(\gamma)\).
+    \end{enumerate}
+\end{definition}
+
+\begin{lemma}
+    All definitions of conditional mutual information are equivalent.
+\end{lemma}
+
+\begin{lemma}[Chain rule for mutual information]
+    The following relations hold:
+    \begin{enumerate}
+        \item \(I((\alpha,\beta) : \gamma) = I(\alpha : \gamma) + I(\beta: \gamma \mid \alpha)\).
+        \item \(I((\alpha,\beta) : \gamma \mid \delta) = I(\alpha : \gamma \mid \delta) + I(\beta: \gamma \mid \alpha, \delta)\).
+    \end{enumerate}
+\end{lemma}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\end{document}

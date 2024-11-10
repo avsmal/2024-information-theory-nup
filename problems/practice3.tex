@@ -1,0 +1,60 @@
+\documentclass[a4paper]{article}
+\usepackage[empty]{fullpage}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{csquotes}
+\usepackage{titling}
+\usepackage[useregional]{datetime2}
+\usepackage{graphicx}
+\usepackage{float}
+
+\title{Practice 3: Coding}
+\date{\DTMdate{2024-10-23}}
+
+\preauthor{}
+\postauthor{}
+\author{}
+\setlength{\droptitle}{-50pt}
+
+\begin{document}
+
+\maketitle
+
+\section*{Coding}
+
+\begin{enumerate}
+    \item
+    There exist uniquely decodable codes that are not prefix codes; provide an example.
+
+    \item Provide a clear one-to-one correspondence between the set of infinite sequences of digits \(0,1,2\) and the set of infinite sequences of zeros and ones.
+
+    \item Let the words \(c_1, c_2, \ldots, c_k\) and \(d_1, d_2, \ldots, d_k\) form prefix codes (individually). Show that the \(kl\) words \(c_i d_j\) (concatenating one word to another without a separator) also form a prefix code.
+
+    \item Let the integer \(x\) be chosen randomly in the interval from \(1\) to \(1000\) (all possible values of \(x\) are equally likely). Prove that any algorithm that finds \(x\) using yes/no questions asks \emph{on average} no fewer than \(\log 1000\) questions.
+
+    \item Prove that any injective encoding can be transformed into a prefix code at the cost of a small increase in the average code length: if the original code had an average length of \(\ell\), then the new one will have an average length of no more than \(\ell + 2\log{\ell} + 2\).
+
+    \item Let \(\{a_1, a_2, \ldots, a_n\}\) be an arbitrary alphabet and \(p_1, p_2, \ldots, p_n\) be the probabilities of the letters in this alphabet. Prove that for any injective encoding of the letters of this alphabet, the average code length is at least \(H - 2 \log{H} - 2\). Here \(H\) is the entropy of the distribution with probabilities \(p_1, p_2, \ldots, p_n\).
+
+    \item     A code is \emph{balanced} if for some constant \(c\) and for
+    all \(i\), the following holds: \(|c_i| \le - \log p_i + c\).
+    Prove that arithmetic coding is balanced with a constant of \(2\).
+
+    % \item Prove that the constant \(2\) in the previous problem cannot be lowered, even assuming that \(p_1, \ldots, p_n\) are ordered by magnitude.
+
+    % \item
+    % \begin{enumerate}
+        %   \item Prove that the Shannon–Fano code is a prefix code.
+
+        %   \item Prove that if the central interval is assigned to where most of it ends up, then the Shannon–Fano coding is not balanced (i.e., there is no constant \(d\) such that \(l(c_i) < - \log{p_i} + d\) for any \(k\) and any original probabilities \(p_1, \ldots, p_k\)).
+
+        %   \item Prove that if the central interval is always assigned to the right half, then the Shannon–Fano coding is also not balanced.
+        % \end{enumerate}
+
+    \item Prove that Huffman coding is not balanced.
+
+\end{enumerate}
+\end{document}

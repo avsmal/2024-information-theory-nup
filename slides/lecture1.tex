@@ -1,0 +1,285 @@
+\documentclass[handout,aspectratio=169]{beamer}
+\usetheme{default}
+
+\usepackage{amsmath,amssymb}
+
+
+\newcommand{\pitem}{\pause\item}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+
+\newenvironment{sol}{%
+\begin{block}{}%
+\setbeamercolor{block body}{bg=lightgray}%
+}{
+\end{block}}
+
+ \AtBeginSection[]{
+       \begin{frame}
+           \vfill
+           \centering
+           \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+                 \usebeamerfont{title}\insertsectionhead\par%
+               \end{beamercolorbox}
+           \vfill
+           \end{frame}
+     }
+
+
+
+\title{Information Theory}
+\author{Alexander Smal at NUP}
+\date{09.10.2024.\\ Lecture 1}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+    \frametitle{About the course}
+    Central question of this course:\medskip
+
+    \begin{quote}
+        How to measure the amount of information?
+    \end{quote}
+
+    \medskip\pause
+    We are going to consider tree approaches:
+    \begin{enumerate}
+        \item \textbf{Combinatorial.} Hartley's formula.
+        \item \textbf{Probabilistic.} Shannon's entropy.
+        \item \textbf{Algorithmic.} Kolmogorov complexity.
+    \end{enumerate}
+    \medskip\pause
+    We will see applications in:
+    \begin{itemize}
+        \item coding theory,
+        \item cryptography,
+        \item algorithms,
+        \item \ldots
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Combinatorial approach}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Hartley's formula}
+Let \(A\) be a finite set.
+\begin{definition}[Ralph Hartley, 1928]
+     \emph{The amount of information in \(A\)} is \(\chi(A) = \log_{10}|A|\).
+\end{definition}
+
+\pause
+
+\begin{block}{Remarks}
+\begin{itemize}
+    \item A set of size 10 has 1 unit of information.
+
+    \item This unit has several names: \emph{hartley} (\emph{Hart}), \emph{ban}, \emph{dit}.
+
+    \item Replacing $\log_{10}$ with $\log_2$ will give us \emph{shannons} (\emph{Sh}).
+
+    \item Replacing $\log_{10}$ with $\ln$ will give us \emph{nats}.
+
+    \item 1 nat is equal to $1/\ln 2 \approx 1.44$ Sh and $1/\ln 10 \approx 0.434$ Hart.
+
+    \item In this course we will measure the amount of information in shannons and for simplicity call it bits.
+
+\end{itemize}
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Hartley's formula. Application}
+\begin{example}
+Suppose that we know that $x\in A$. How much information is contained in the fact that $x\in B$?
+\end{example}
+\pause
+\begin{solution}
+\(\chi(A) - \chi(A\cap B)\)
+\end{solution}
+\pause
+\begin{example}
+    The ordering of the set $\{\seqn{a}{5}\}$ is unknown. We have learned that \(a_1>a_2\) or \(a_3>a_4\). How many bits of information have we gained?
+\end{example}
+\pause
+\begin{solution}
+    The set \(A\) consists of \(5!\) permutations, while the set \(B\) consists of the permutations that satisfy the new conditions. It is easy to verify that \(|B| = 90\).
+    \\Thus, we have learned \(\log 120 - \log 90 = \log(4/3)\) bits.
+\end{solution}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties}
+Let \(A\subseteq\bitstr\times\bitstr\). Denote by \(\pi_1(A)\) and \(\pi_2(A)\) the projections of the set \(A\) onto the first and second coordinates, respectively, and let \(\chi_1(A) = \log|\pi_1(A)|\) and \(\chi_2(A) = \log|\pi_2(A)|\).
+
+\begin{theorem}
+    \(\chi(A) \le \chi_1(A) + \chi_2(A)\).
+\end{theorem}
+
+\begin{definition}
+    The amount of information in the second coordinate of \(A\subset\bitstr\times\bitstr\) given the first coordinate is
+    \[\chi_{2|1} = \log\max_{a\in\pi_1(A)}\bigl|\{x \mid (a, x)\in A\}\bigr|.\]
+\end{definition}\vspace{-5mm}
+\begin{theorem}
+    \(\chi(A) \le \chi_1(A) + \chi_{2|1}(A)\).
+\end{theorem}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties (contd)}
+\begin{theorem}\label{thm:volume}
+    For \(A\subset\bitstr\times\bitstr\times\bitstr\)
+    \[2\cdot\chi(A) \le \chi_{12}(A) + \chi_{13}(A) + \chi_{23}(A).\]
+\end{theorem}
+\begin{corollary}
+    The square of the volume of a three-dimensional body does not exceed the product of the areas of its projections onto the coordinate planes.
+\end{corollary}
+
+\begin{theorem}
+    If \(f: X\to Y\)
+    \begin{enumerate}
+        \item is a surjection, then \(\chi(Y)\le \chi(X)\),
+        \item is an injection, then \(\chi(X)\le \chi(Y)\).
+    \end{enumerate}
+\end{theorem}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Application: The Game of 10 Questions}
+    How many yes/no questions needed to determine a number from 1 to \(N\), if (a) questions can be asked adaptively; (b) questions must be written down in advance.
+
+    \pause
+    \begin{block}{Upper bound}
+    The upper bound \(\lceil\log N\rceil\) in both cases.
+    \end{block}
+    \pause
+
+    \begin{block}{Lower bound}
+    Let \(A=[N]\). The set \(Q = \{(\seqn{q}{k})\}\) is the set of protocols (answers to the questions). Consider \(A\) and \(Q\) as projections of some set \(S\) of all outcomes of the game onto different coordinates. \\
+    Then the following inequalities hold:
+    \begin{itemize}
+        \item \( \chi_Q(S) = \chi(Q) \le \chi_1(Q) + \chi_2(Q) + \dotsb + \chi_k(Q) \le k, \)
+        \item \( \chi_A(S) = \chi(A) \le \chi(S) \le \chi_Q(S) + \chi_{A|Q}(S) \le k + 0 = k. \)
+    \end{itemize}
+    Thus, we get \(\log N = \chi(A) \le k\).
+    \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Cost of Information}
+    Let a secret integer be chosen from 1 to \(n\) (where \(n \ge 2\)).
+    Any yes/no questions can be asked. For a positive answer, we will pay 1 euro, and for a negative answer—two euros. How much it is necessary and sufficient to pay to guess the number?
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Sorting stones}
+    \begin{example}
+    How many comparisons are needed to sort \(N\) stones by weight?
+    \end{example}
+
+    \begin{solution}
+    \textbf{Lower Bound.} It will require \(\lceil\chi(S_N)\rceil = \lceil\log n!\rceil\) comparisons.
+    \pause\medskip
+
+    \textbf{Upper Bound.} We will sort using insertion sort with binary search for the insertion point. The number of comparisons is:
+    \[
+    \lceil\log 2\rceil + \lceil\log 3\rceil + \dotsb + \lceil\log n\rceil \le \log n! + n - 1 = n\log n + O(n).
+    \]
+    \end{solution}
+
+    \pause
+
+    How many weighings are needed to sort \(N\) stones by weight?
+    Find the exact answer to this question for \(N = 2, 3, 4, 5\).
+
+    \pause
+    \emph{Hint: use a greedy strategy where each weighing provides maximum information.}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Application: Finding the Fake Coin}
+    \begin{itemize}
+        \item There are 20 visually identical coins, one of which is fake and lighter than the others.
+        How to find the fake coin using a balance scale? What is the minimum number of weighings needed?
+
+        \pitem There are 13 visually identical coins, one of which is fake (with unknown relative weight).
+        Can you find the fake coin and determine its relative weight in three weighings?
+
+        \pitem There are 15 visually identical coins, one of which is fake. Can you find the fake coin in three weighings
+        if you do not need to determine its relative weight?
+
+        \pitem There are 14 visually identical coins, one of which is fake. Can you find the fake coin in three weighings
+        if you do not need to determine its relative weight?
+
+        \pitem Find one fake coin among 12 in three weighings, if its relative weight is unknown. Hint: use a "greedy" strategy, where each weighing provides maximum information.
+    \end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{}
+    .
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\end{document}

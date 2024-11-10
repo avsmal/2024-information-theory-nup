@@ -1,0 +1,90 @@
+\documentclass[a4paper]{article}
+\usepackage[empty]{fullpage}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{csquotes}
+\usepackage{titling}
+\usepackage[useregional]{datetime2}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+
+\title{Practice 4: Coding and Profiles}
+\date{\DTMdate{2024-11-05}}
+
+\preauthor{}
+\postauthor{}
+\author{}
+\setlength{\droptitle}{-50pt}
+
+\begin{document}
+
+\maketitle
+
+\section*{Coding and Profiles}
+
+\begin{enumerate}
+
+\item We have a rectangular sheet divided into rectangles. It is not necessary for the cut lines to extend from edge to edge. It is known that any horizontal line intersects at least $n$ rectangles and any vertical line intersects at least $m$ rectangles. Prove that in this partition, there are at least $mn$ rectangles.
+
+\item It is known that the random variables $\alpha$ and $\beta$ differ with probability $\epsilon$. Moreover, the variable $\alpha$ takes on no more than $a$ different values. Show that
+$$H(\alpha \mid \beta) \leq \epsilon \log(a) + h(\epsilon, 1-\epsilon).$$
+
+\item Prove that the following profile is realized only when $h = \log n$ for some integer $n$.
+    \begin{center}
+    \begin{tikzpicture}
+        \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+        \node[circ, label=left:$\alpha$]  (a) at (1,1) {};
+        \node[circ, label=right:$\beta$]  (b) at (2,1) {};
+        \node[circ, label=below:$\gamma$] (c) at (1.5,0) {};
+        \node at (0.5,1.2) {$0$};
+        \node at (1.5,-.4) {$0$};
+        \node at (2.5,1.2) {$0$};
+
+        \node at (0.9,0.4) {$h$};
+        \node at (1.5,1.3) {$h$};
+        \node at (2.1,0.4) {$h$};
+
+        \node at (1.5,0.6) {$-h$};
+    \end{tikzpicture}
+    \end{center}
+
+\item Consider the following code. Suppose we need to encode a binary string $a_1, a_2, \dots, a_{2^r-r-1}$. We write these bits in the same order in the binary string $(b_i)_{i=1}^{2^r-1}$ and skip the bits that are powers of two. In every $2^i$ bit, we write the XOR of the bits whose indices in binary representation contain 1 at the position $2^i$. Prove that this code corrects one error. How can we detect the location of the error?
+
+
+\item Let $H$ be a hypergraph, and $S_1, S_2, \dots, S_m \subset V(H)$ such that any $v \in V(H)$ belongs to at least $k$ subsets from $S_i$. Define $E(H_i)$ as $\{ e \cap S_i: e \in E(H) \}$. Prove that $$|E(H)|^k \leq \prod |E(H_i)|.$$
+
+\item Prove that the number of independent sets in a $d$-regular bipartite graph does not exceed:
+$$ (2^{d+1} - 1)^{\frac{n}{2d}}.$$
+
+\begin{enumerate}
+\item Let $I$ be a random variable uniformly distributed over all independent subsets. Let $X_i = 1_{i \in I}$.
+\item Show that $\log|\mathcal{I}(G)| = H(X_1, X_2, \dots, X_n)$, where $\mathcal{I}$ is the number of independent sets in the graph $G$.
+\item Let $Q_b = [I \cap N(b)]$ and $q_v = \Pr[Q_v]$. Prove that $H(X_B \mid X_A) \leq \sum_{b \in B} q_b,$ where $A, B$ are the parts of the bipartite graph.
+\item Estimate $H(X_A)$ in terms of $H(X_{N(b)})$.
+\item Show that $H(X_{N(b)}) \leq (1 - q_b) \log(2^d - 1) + H(q_b).$
+\item Combining all the statements, obtain the result about the number of independent sets. (Hint: $H(x) + x \log \frac{2^d}{2^d - 1}$ reaches its maximum at $x_0 = \frac{2^d}{2^{d+1} - 1}$).
+\end{enumerate}
+
+\item Vasya chooses a number $x \in \{1, 2, \dots, n\}$ randomly such that the probability of choosing the number $i$ is proportional to $\frac{1}{i^2}$. Prove that Kolya can, by asking Vasya on average $O(1)$ yes/no questions, determine the chosen number.
+
+\item Alice is given of the value the random variable $\alpha$, while Bob is given the value of some function $f$ of $\alpha$. Invent an algorithm that allows Alice to communicate the value of $\alpha$ to Bob, transmitting on average no more than $H(\alpha \mid f(\alpha)) + 1$ bits.
+
+\item A rectangular table is divided into (combinatorial) rectangles such that each row intersects at least \(n\) rectangles and each column intersects at least \(m\) rectangles. Prove that the total number of rectangles is at least \(nm\).
+
+\item Alena chooses a number $x \in \{1, 2, \dots, n\}$ randomly according to a known probability distribution by Valera. It is known that Valera can learn the chosen number by asking Alena on average $q$ yes/no questions. Prove that some number is then chosen by Alena with probability no less than $2^{-q}$.
+
+\item Prove that the function $I(\alpha:\beta) - I(\alpha:\beta | \gamma)$ is a symmetric function of the random variables $\alpha, \beta, \gamma$.
+
+\item Let the random variable $\alpha$ have the distribution $\frac{1}{3}, \frac{2}{3}$, and the random variable $\beta$ have the distribution $\frac{1}{2}, \frac{1}{2}$. Within what limits can $I(\beta:\alpha)$, $H(\alpha \mid \beta)$, $H(\beta \mid \alpha)$, and $H(\alpha, \beta)$ vary?
+
+\item Construct jointly distributed random variables $\xi, \eta, \beta, \gamma$, for which the inequality
+$$ I(\xi : \eta) \leq I(\xi : \eta \mid \beta) + I(\xi : \eta \mid \gamma) + I(\beta : \gamma) $$
+does not hold.
+
+\end{enumerate}
+\end{document}
