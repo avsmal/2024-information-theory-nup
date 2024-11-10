@@ -1,1 +1,1 @@
-# 2024-informationtheory-nup
+# 2024-information-theory-nup
