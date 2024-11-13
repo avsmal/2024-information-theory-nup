@@ -1492,6 +1492,357 @@ A rectangular table is divided into (combinatorial) rectangles such that each ro
 \end{exercise}
 
 
+\section{Cryptography}
+\subsection{Symmetric Key Encryption}
+
+Consider the task of encoding a message using symmetric encryption. We will assume that the computational resources of the adversary are unlimited. Let us suppose that we encrypt a message $m$ with an encryption key $k$. During the encryption of the message, we obtain the \emph{ciphertext} $c = E(k, m)$. The recipient of the ciphertext also knows the key $k$ and can recover the original message $m = D(k, c)$.
+
+We will assume that $m$ and $k$ are random variables. The adversary does not know $m$ and $k$, but knows $c$. For a \emph{perfect} encryption scheme, the following conditions must hold:
+\[
+\begin{cases}
+    H(c \mid k, m) = 0,\\
+    H(m \mid k, c) = 0,\\
+    I(c : m) = 0.
+\end{cases}
+\]
+
+\begin{theorem}[Shannon]
+    $H(k) \ge H(m)$, even if the condition $H(c \mid k, m) = 0$ is violated
+    (i.e., the algorithm $E$ uses random bits).
+\end{theorem}
+\begin{remark}
+    A one-time pad has this property.
+\end{remark}
+\begin{proof}
+    According to the condition, $x + w = 0$, i.e., $x = -w$.
+
+    \begin{center}
+        \begin{tikzpicture}
+            \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+            \node[circ, label=left:$m$]  (x) at (1,1) {};
+            \node[circ, label=right:$c$] (y) at (2,1) {};
+            \node[circ, label=below:$k$] (z) at (1.5,0) {};
+            \node at (0.5,1.2) {$0$};
+            \node at (1.5,-.4) {$z$};
+
+            \node at (1.5,1.3) {$x$};
+            \node at (2.1,0.4) {$y$};
+
+            \node at (1.5,0.6) {$w$};
+        \end{tikzpicture}
+    \end{center}
+    Since the mutual information is non-negative, we have $w + y \ge 0$, i.e.,
+    $y \ge -w = x$. Now, from $y \ge x$ and $z \ge 0$, it follows that $H(k) \ge H(m)$.
+\end{proof}
+
+\subsection{Secret Sharing Schemes}
+
+Let us have a certain secret $S_0$ and $n$ participants, and we want to share this secret among them in such a way that they can only use it together, while any subset of participants cannot.
+
+\begin{definition}
+    A \emph{perfect secret sharing scheme} is a joint distribution of probabilities $(S_0, \seqn{S}{n})$ such that
+    \[
+    \begin{cases}
+        H(S_0 \mid \seqn{S}{n}) = 0,\\
+        H(S_0 \mid \seqin{S}{i}{k}) = H(S_0), & k < n.
+    \end{cases}
+    \]
+    The second condition can be rewritten as $I(S_0 : \seqin{S}{i}{k}) = 0$.
+\end{definition}
+
+For a perfect secret sharing scheme, there is a simple construction. Let us assume that $S_0$ is written (encoded) using $\ell$ bits. We will independently and uniformly choose $S_1, \dotsc, S_{n-1} \in \{0,1\}^\ell$. $S_n$ is determined by the condition
+$S_0 \oplus S_1 \oplus S_2 \oplus \dotsb \oplus S_n = \vec 0$ (coordinate-wise sum modulo 2).
+
+\begin{statement}
+    The proposed secret sharing scheme is perfect.
+\end{statement}
+
+\begin{definition}
+    A \emph{threshold perfect secret sharing scheme} is a joint distribution of probabilities $(S_0, \seqn{S}{n})$ such that
+    \[
+    \begin{cases}
+        H(S_0 \mid \seqin{S}{i}{t}) = 0,\\
+        H(S_0 \mid \seqin{S}{i}{k}) = H(S_0), & k < t.
+    \end{cases}
+    \]
+\end{definition}
+
+\paragraph{Shamir's Threshold Scheme.} Let us assume that the secret $S_0$ is an element of some finite field $\mathbb{F}_q$. We will choose a random polynomial $p$ over the field $\mathbb{F}_q$ of degree at most $t-1$: we will choose $t-1$ coefficients independently and uniformly, and determine the last (constant) coefficient from the condition $p(0) = S_0$. We will randomly select and inform all participants of some set of distinct non-zero elements of the field $\seqn{a}{n} \in \mathbb{F}_q$ and compute the participants' secrets as the value of the polynomial at the corresponding points $S_i = p(a_i)$. Now, any $t$ participants can gather, use the formula for polynomial interpolation, and compute $S_0 = p(0)$. If fewer participants gather, they will have no information about $S_0$.
+
+\begin{statement}
+    Shamir's threshold scheme is perfect.
+\end{statement}
+\begin{proof}
+    Any polynomial of degree less than $t-1$ can be extended to a polynomial of higher degree with any value at point $0$.
+\end{proof}
+
+\begin{definition}
+    A \emph{perfect secret sharing scheme for an access structure $\Gamma \subset 2^{[n]}$} (with $\Gamma$ being upward closed) is a joint distribution of probabilities $(S_0, \seqn{S}{n})$ such that
+    \[
+    \begin{cases}
+        H(S_0 \mid \seqin{S}{i}{m}) = 0, & \{\seqn{i}{m}\} \in \Gamma,\\
+        H(S_0 \mid \seqin{S}{i}{m}) = H(S_0), & \{\seqn{i}{m}\} \not\in \Gamma.
+    \end{cases}
+    \]
+\end{definition}
+
+\begin{definition}
+    An \emph{ideal secret sharing scheme} is a perfect secret sharing scheme with the additional requirement of "efficiency".
+    \[
+    \forall i \in \{1, 2, \dotsc, n\},\ H(S_i) \le H(S_0).
+    \]
+\end{definition}
+
+\begin{statement}
+    If participant $i$ is \emph{essential} in the access structure $\Gamma$ (i.e., there exists
+    some $s \in \Gamma$ such that $s \setminus \{i\} \not\in \Gamma$), then $H(S_i) \ge H(S_0)$.
+\end{statement}
+
+\begin{remark}
+    Shamir's scheme is ideal.
+\end{remark}
+
+\begin{proof}
+    Let $s=\{i, \seqn{j}{k}\} \in \Gamma$, and $s \setminus \{i\} \not\in \Gamma$.
+    We denote the mutual information $I(S_0 : \seqin{S}{j}{k} \mid S_i)$ as $h$,
+    and $I(S_i : \seqin{S}{j}{k} \mid S_0)$ as $g$. From the condition
+    $I(S_0 : \seqin{S}{j}{k}) = 0$, we obtain that
+    $I(S_0 : S_i : \seqin{S}{j}{k}) = -h$, and similarly, from
+    $I(S_i : \seqin{S}{j}{k}) \ge 0$, we get that $g \ge h$.
+
+    \begin{center}
+        \begin{tikzpicture}
+            \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+            \node[circ, label=left:$S_i$]  (a) at (1,1) {};
+            \node[circ, label=right:$S_0$]  (b) at (2,1) {};
+            \node[circ, label=below:$\seqin{S}{j}{k}$] (c) at (1.5,0) {};
+            \node at (0.5,1.2) {$\ge 0$};
+            \node at (2.5,1.2) {$0$};
+
+            \node at (2.1,0.4) {$h$};
+            \node at (0.9,0.4) {$g$};
+
+            \node at (1.5,0.6) {$-h$};
+        \end{tikzpicture}
+    \end{center}
+    Thus, $H(S_i) \ge H(S_0)$.
+\end{proof}
+
+\begin{remark}
+    This statement shows that there cannot be a more "efficient" secret sharing scheme than an ideal one.
+\end{remark}
+
+\begin{statement}
+    For any access structure $\Gamma$, there exists a perfect secret sharing scheme.
+\end{statement}
+
+\begin{proof}
+    Let us create a separate set of secrets $S^A_{i_1}, S^A_{i_2}, \dotsc, S^A_{i_k}$ for each subset
+    $A = \{\seqn{i}{k}\} \in \Gamma$: $S^A_{i_1} \oplus S^A_{i_2} \oplus \dotsb \oplus S^A_{i_k} = S_0$.
+    (It is sufficient to consider only minimal sets $A$.)
+\end{proof}
+
+\begin{remark}
+    The proposed scheme is not ideal.
+\end{remark}
+
+\begin{statement}
+    There exist access structures for which there is no ideal secret sharing scheme.
+\end{statement}
+
+\begin{proof}
+    Consider the access structure defined by the following graph (the edges correspond to the authorized
+    sets).
+    \begin{center}
+        \begin{tikzpicture}
+            \tikzstyle{vert}=[circle, draw, fill=black!50,
+            inner sep=0pt, minimum width=4pt]
+            \node at (0,0.5) {};
+            \foreach \i/\n in {1/a, 2/b, 3/c, 4/d}
+            \node[vert, label=below:\i] (\n) at (\i,0) {};
+
+            \path (a) edge (b);
+            \path (b) edge (c);
+            \path (c) edge (d);
+        \end{tikzpicture}
+    \end{center}
+    We will show that for this access structure, $H(S_2) + H(S_3) \ge 3H(S_0)$, in other words,
+    $\max_i \frac{H(S_i)}{H(S_0)} \ge \frac{3}{2}$.
+
+    For the proof, we will need three lemmas. Let us denote $h = H(S_0)$.
+
+    \begin{lemma}
+        $H(S_2 \mid S_1, S_3) \ge h$.
+    \end{lemma}
+
+    \begin{proof}
+        The second participant can recover the secret using either the secret of the first or the secret of the third participant,
+        i.e., $I(S_2 : S_0 \mid S_1, S_3) = h$.
+        \begin{center}
+            \begin{tikzpicture}
+                \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+                \node[circ, label=left:$S_2$]  (a) at (1,1) {};
+                \node[circ, label=right:$S_0$]  (b) at (2,1) {};
+                \node[circ, label=below:{$S_1, S_3$}] (c) at (1.5,0) {};
+                \node at (0.5,1.2) {$\ge 0$};
+                \node at (2.5,1.2) {$0$};
+                \node at (1.5,1.3) {$h$};
+            \end{tikzpicture}
+        \end{center}
+        Thus, $H(S_2 \mid S_1, S_3) \ge I(S_2 : S_0 \mid S_1, S_3) = h$.
+    \end{proof}
+
+    \begin{lemma}
+        $H(S_3 \mid S_1) \ge h$.
+    \end{lemma}
+
+    \begin{proof}
+        Similarly to the previous lemma, we obtain that $H(S_3 \mid S_1, S_4) \ge h$, and consequently,
+        $H(S_3 \mid S_1) \ge h$.
+        \begin{center}
+            \begin{tikzpicture}
+                \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+                \node[circ, label=left:$S_3$]  (a) at (1,1) {};
+                \node[circ, label=right:$S_0$]  (b) at (2,1) {};
+                \node[circ, label=below:{$S_1, S_4$}] (c) at (1.5,0) {};
+                \node at (0.5,1.2) {$\ge 0$};
+                \node at (2.5,1.2) {$0$};
+                \node at (1.5,1.3) {$h$};
+            \end{tikzpicture}
+        \end{center}
+    \end{proof}
+
+    \begin{lemma}\label{lm:secret4:l3}
+        $I(S_1 : S_3 \mid S_2) \ge h$.
+    \end{lemma}
+
+    \begin{proof}
+        The following scheme should be interpreted as entropy conditioned on $S_2$.
+        \begin{center}
+            \begin{tikzpicture}
+                \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+                \node[circ, label=left: $S_1 \mid S_2$]  (a) at (1,1) {};
+                \node[circ, label=right:$S_3 \mid S_2$]  (b) at (2,1) {};
+                \node[circ, label=below:$S_0 \mid S_2$] (c) at (1.5,0) {};
+
+                \node at (0.9,0.4) {$0$};
+                \node at (1.5,1.3) {$\ge 0$};
+                \node at (2.1,0.4) {$0$};
+
+                \node at (1.5,-.4) {$0$};
+                \node at (1.5,0.6) {$h$};
+            \end{tikzpicture}
+        \end{center}
+        Note that $I(S_1 : S_0 \mid S_2) = h$ and $I(S_3 : S_0 \mid S_2) = h$, while
+        $I(S_1 : S_0 \mid S_2, S_3) = 0$ and $I(S_3 : S_0 \mid S_1, S_2) = 0$.
+        Thus, $I(S_1 : S_3 : S_0 \mid S_2) = h$, hence $I(S_1 : S_3 \mid S_2) \ge h$.
+    \end{proof}
+
+    Now we just need to sum the results of the three lemmas:
+    \[
+    H(S_2) + H(S_3) \ge H(S_2, S_3) = H(S_2 \mid S_1, S_3) + H(S_3 \mid S_1) + I(S_1 : S_3 \mid S_2) +
+    I(S_2 : S_1) \ge 3h.
+    \]
+\end{proof}
+
+\begin{exercise}
+    Prove that for any secret sharing scheme for this structure,
+    $\max_i \frac{H(S_i)}{H(S_0)} \ge \frac{3}{2}$.
+    \begin{center}
+        \begin{tikzpicture}
+            \tikzstyle{vert}=[circle, draw, fill=black!50,
+            inner sep=0pt, minimum width=4pt]
+            \node[vert, label=below:1] (a) at (1,0) {};
+            \node[vert, label=below:4] (d) at (4,0) {};
+
+            \path (a) edge (d);
+
+            \node[vert, label=below:2] (b) at (2,0) {};
+            \node[vert, label=below:3] (c) at (3,0) {};
+
+            \path (b) edge[bend left] (d);
+        \end{tikzpicture}
+    \end{center}
+\end{exercise}
+
+\begin{theorem}[Csirmaz'94]
+    There exist access structures $\Gamma$ on $n$ participants such that for any secret sharing scheme,
+    $\max_i \frac{H(S_i)}{H(S_0)} \ge \Omega\left(\frac{n}{\log n}\right)$.
+\end{theorem}
+
+\begin{proof}
+    Choose $n$ and $k$ such that $n = 2^k + k - 1$, and two sets of participants
+    \[
+    \begin{array}{l}
+        A = \{\seqn{a}{k}\},\\
+        B = \{\seqn{b}{2^k - 1}\}.
+    \end{array}
+    \]
+    To define the access structure, we need two families of sets. Let $\{A_0, \seqn{A}{2^k-1}\}$ be all subsets of $A$, where $A_0 = A$ and for any $i < j$, $A_i \not\subseteq A_j$ (for example, they can be ordered by decreasing size). We will construct the sets $\{B_0, \seqn{B}{2^k - 1}\}$ as follows: $B_0 = \emptyset$, $B_i = \{\seqn{b}{i}\}$. Now we are ready to define the access structure $\Gamma$: $\Gamma = \{U_i\}_{i=0}^{2^k-1}$, where $U_i = A_i \cup B_i$.
+
+    As in previous statements, we denote $H(S_0)$ as $h$. In the following reasoning, we will use the following notation: by the entropy of a set of participants $X = \{\seqn{x}{t}\} \subset A \cup B$, we will mean the entropy of the secrets belonging to the participants of this set, i.e., $H(X) = H(\seqin{S}{x}{t})$.
+
+    \begin{lemma}\label{lm:secretlb}
+        For $i = \{0, 1, 2, \dots, 2^k-2\}$
+        \[
+        H(A \cup B_i) - H(B_i) \ge H(A \cup B_{i+1}) - H(B_{i+1}) + h.
+        \]
+    \end{lemma}
+
+    From this lemma, it follows that
+    \begin{multline*}
+        H(A) = H(A \cup B_0) - H(B_0) \ge H(A \cup B_{1}) - H(B_1) + h \ge \dotsb \ge\\
+        \ge \underbrace{H(A \cup B_{2^k-1}) - H(B_{2^k-1})}_{\ge 0} + (2^k - 1) \cdot h.
+    \end{multline*}
+    Thus, we obtain that $H(A) = H(\seqin{S}{a}{k}) \ge (2^k - 1) \cdot h$. Consequently, there exists an $i$ such that $H(S_{a_i}) \ge \frac{2^k - 1}{k} \cdot h$.
+    Recall that we chose $n = 2^k + k - 1$, i.e., $H(S_{a_i}) \ge \Omega\left(\frac{n}{\log n}\right) \cdot h$. It remains to prove the lemma.
+
+    \begin{proof}[Proof of lemma~\ref{lm:secretlb}]
+        We will prove two inequalities:
+        \begin{enumerate}
+            \item $H(A_{i+1} \cup B_i) + H(B_{i+1}) \ge H(A_{i+1} \cup B_{i+1}) + H(B_i)$.
+            \item $H(A \cup B_i) + H(A_{i+1} \cup B_{i+1}) \ge H(A \cup B_{i+1}) + H(A_{i+1} \cup B_i) + h$.
+        \end{enumerate}
+        Note that if we add these two inequalities, we will obtain the statement of the lemma.
+
+        The first inequality states the non-negativity of conditional joint information.
+        Indeed, let us recall the formula for conditional joint information:
+        \[
+        I(x:y \mid z) \ge 0 \iff H(x,z) + H(y,z) \ge H(x,y,z) + H(z).
+        \]
+        Thus, the first inequality asserts that $I(A_{i+1} : \{b_{i+1}\} \mid B_i) \ge 0$.
+
+        Similarly, the second inequality asserts that $I(A : \{b_{i+1}\} \mid A_{i+1} \cup B_i) \ge h$.
+        The proof of this assertion is analogous to lemma~\ref{lm:secret4:l3}—it is necessary to consider the conditional distribution given $A_{i+1} \cup B_i$.
+        \begin{center}
+            \begin{tikzpicture}
+                \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
+
+                \node[circ, label=left:$A \mid A_{i+1} \cup B_i$]  (a) at (1,1) {};
+                \node[circ, label=right:{$\{b_{i+1}\} \mid A_{i+1} \cup B_i$}]  (b) at (2,1) {};
+                \node[circ, label=below:{$S_0 \mid A_{i+1} \cup B_i$}] (c) at (1.5,0) {};
+                \node at (0.9,0.4) {$0$};
+                \node at (1.5,1.3) {$\ge 0$};
+                \node at (2.1,0.4) {$0$};
+
+                \node at (1.5,-.4) {$0$};
+                \node at (1.5,0.6) {$h$};
+            \end{tikzpicture}
+        \end{center}
+    \end{proof}
+    This lemma concludes the proof of the theorem.
+\end{proof}
+
+\begin{remark}
+    Lower bounds on the excessive complexity of perfect secret sharing schemes imply lower bounds on the circuit complexity of monotonic functions.
+\end{remark}
+
+
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thebibliography}{9}

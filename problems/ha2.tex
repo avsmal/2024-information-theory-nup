@@ -1,0 +1,57 @@
+\documentclass[a4paper]{article}
+\usepackage[empty]{fullpage}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{csquotes}
+\usepackage{titling}
+\usepackage[useregional]{datetime2}
+\usepackage{graphicx}
+\usepackage{float}
+
+\title{Home Assignment 2: Shannon Entropy}
+\date{\DTMdate{2019-02-21}}
+
+\preauthor{}
+\postauthor{}
+\author{}
+\setlength{\droptitle}{-50pt}
+
+\begin{document}
+
+\maketitle
+
+\section*{Entropy}
+
+\begin{enumerate}
+  \item Prove that \(I(f(\alpha):\beta) \leq I(\alpha:\beta)\) for any function \(f\).
+
+  \item Prove that \(I((\alpha,\beta):\gamma) \geq I(\alpha : \gamma)\).
+
+  \item Prove that 
+  \[
+  I((\alpha,\beta):\gamma) = I(\alpha : \gamma) + I(\beta:\gamma \mid \alpha).
+  \]
+
+  \item Prove that if \(I(\alpha:\gamma|\beta) = 0\), then \(I(\alpha:\gamma) \leq I(\alpha:\beta)\), and therefore \(I(\alpha:\gamma) \leq H(\beta)\).
+
+  \item Prove that \(I((\alpha,\beta):\gamma) \geq I(\alpha:\gamma)\) and that the difference between the left and right sides equals \(I(\beta:\gamma|\alpha)\).
+
+  \item Prove the inequality 
+  \[
+  2H(\alpha,\beta,\gamma) \leq H(\alpha, \beta) + H(\alpha, \gamma) + H(\beta,\gamma).
+  \]
+
+  \item Let \(A\) be some event. Show that the quantity \(H(\zeta \mid A)\) can be both greater and less than the quantity \(H(\zeta)\).
+
+  \item (Shearer's inequality) Prove the following generalization of the inequality
+    \[
+    2H(\alpha,\beta,\gamma) \leq H(\alpha, \beta) + H(\alpha, \gamma) + H(\beta,\gamma).
+    \]
+    Let \(T_1, \ldots , T_k\) be arbitrary tuples composed of the variables \(\alpha_1, \ldots, \alpha_n\), with each variable appearing in exactly \(r\) tuples. Then \(r H(\alpha_1,\dots, \alpha_n) \leq H(T_1) + H(T_2) + \cdots + H(T_k)\).
+
+\end{enumerate}
+
+\end{document}
