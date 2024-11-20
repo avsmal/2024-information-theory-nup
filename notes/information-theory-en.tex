@@ -1843,6 +1843,317 @@ $S_0 \oplus S_1 \oplus S_2 \oplus \dotsb \oplus S_n = \vec 0$ (coordinate-wise s
 \end{remark}
 
 
+
+\section{Communication Complexity}
+Let $X$, $Y$, and $Z$ be three finite sets, and let a function $f: X \times Y \to Z$ be given. Two players, whom we will call Alice and Bob, solve the \emph{communication problem for the function $f$} if:
+\begin{enumerate}
+    \item The sets $X$, $Y$, $Z$, and the function $f$ are known to both players,
+    \item Alice knows some $x \in X$,
+    \item Bob knows some $y \in Y$,
+    \item Alice and Bob aim to compute $f(x,y)$.
+\end{enumerate}
+To solve this communication problem, Alice and Bob can send messages to each other. The task is considered solved if both players know $f(x,y)$. We are interested in the minimum number of bits that need to be sent to compute $f(x,y)$.
+
+\begin{definition}
+    A \emph{communication protocol} for the function $f: X \times Y \to Z$ is a rooted binary tree that describes the joint computation of the function $f$ by Alice and Bob. In this tree, each internal vertex $v$ is labeled with either A or B, indicating whose turn it is, Alice's or Bob's, respectively. For each vertex labeled A, a function $g_v: X \to \bits$ is defined, which tells Alice which bit to send if the computation is at this vertex. Similarly, for each vertex $v$ labeled B, a function $h_v: Y \to \bits$ is defined, which specifies the bit that Bob should send at this vertex. Each internal vertex has two children, with the edge to the first child labeled $0$, and the edge to the second child labeled $1$. Each leaf is labeled with a value from the set $Z$.
+
+    The computation according to such a protocol on a specific pair of inputs $(x,y)$ is structured as follows: initially, the computation is at the root. At each internal vertex $v$, depending on the label, either Alice or Bob sends one bit (determined by the corresponding function $g_v$ or $h_v$). After this, the computation moves to one of the children of vertex $v$ through the edge labeled with the bit sent at vertex $v$. When the computation reaches a leaf, it concludes. The result of the computation is the label at the leaf.
+\end{definition}
+
+We will say that the communication protocol \emph{computes the function $f$} if for all pairs $(x,y) \in X \times Y$, the computation reaches a leaf labeled $f(x,y)$. We can now give a formal definition of the \emph{communication complexity of the function $f$}.
+
+Analogously, we can define a \emph{communication protocol that computes the relation $R \subset (X \times Y) \times Z$}—we just need to additionally require that Alice's and Bob's responses are consistent.
+
+\begin{definition}
+    The \emph{communication complexity} of the function $f$ is defined as the smallest depth of the protocol (the maximum edge length of the path from the root to a leaf) that computes the function $f$. It is denoted as $D(f)$.
+\end{definition}
+
+\begin{statement}
+    For any $f: \{0,1\}^n \times\{0,1\}^n \to \bits$, $D(f) \le n + 1$.
+\end{statement}
+\begin{proof}
+    Alice sends her input to Bob, and Bob sends Alice the value of $f$.
+\end{proof}
+
+\begin{example} Examples of functions with non-trivial upper bounds on communication complexity.
+    \begin{enumerate}
+        \item (Pointer Chasing) $D(\mathrm{PC}) \le k \log n$,
+        where \[PC(x,y) = \underbrace{x(y(x(y(x(y(x(y(x}_{\text{$k$ rounds}}(0))))))))).\]
+        The players have a bipartite directed graph with $2n$ vertices, where the out-degree of each vertex is 1. Alice knows the left part, and Bob knows the right part. Initially, they place a token on vertex 0 from Alice's part and start moving it along the edges. They need to make $k$ transitions along the edges of the graph. The answer is the number of the final vertex.
+
+        \item $D(\mathrm{MED}) = O(\log^2 n)$, where $x$ and $y$ are interpreted as characteristic functions of subsets of $[n]$, and $\mathrm{MED}(x,y)$ is the median of their union. (It can be shown that $D(\mathrm{MED}) = \Theta(\log n)$.)
+
+        \item $D(\mathrm{CIS}_G) = O(\log^2 n)$, where $x$ is interpreted as the characteristic function of some clique in the graph $G$, and $y$ as the characteristic function of some independent set in the graph $G$. $\mathrm{CIS}(x,y) = 1$ if the clique and the independent set share a vertex. (Note: It is not known whether there are graphs $G$ for which this problem cannot be solved in $O(\log n)$.)
+    \end{enumerate}
+\end{example}
+
+\subsection{Lower Bounds}
+Consider a communication protocol for some function $f: X \times Y \to Z$. For each vertex $v$, we define the set $R_v \subset X \times Y$—the set of all pairs $(x,y) \in X \times Y$ for which the computation reaches vertex $v$.
+
+\begin{statement}
+    For all vertices $v$, the set $R_v$ is a combinatorial rectangle, i.e., there exist subsets $X_v \subset X$ and $Y_v \subset Y$ such that $R_v = X_v \times Y_v$.
+\end{statement}
+
+\begin{proof}
+    We will show this by induction. It holds for the root. Assume it holds for some vertex $v$ labeled A: $R_v = X_v \times Y_v$. If Alice sends a bit $b$ and the computation moves to vertex $u$, then $R_u = X_u \times Y_u$, where $X_u = \{x \in X_v \mid g_v(x) = b\}$ and $Y_u = Y_v$. Similarly, if Bob sends a bit $b$ and the computation moves to vertex $u$, then $R_u = X_u \times Y_u$, where $X_u = X_v$ and $Y_u = \{y \in Y_v \mid h_v(y) = b\}$.
+\end{proof}
+
+\begin{corollary}
+    The leaves of the communication protocol for the function $f$ define a partition of the set $X \times Y$ into monochromatic rectangles.
+\end{corollary}
+
+We denote $C^R(f)$ as the minimum number of \emph{monochromatic} rectangles covering $X \times Y$.
+
+\begin{statement}
+    $D(f) \ge \log C^R(f)$.
+\end{statement}
+
+\begin{proof}
+    $D(f) \ge \log (\text{\# leaves}) \ge \log C^R(f)$.
+\end{proof}
+
+\paragraph{Rectangle Size Method.} We define a certain semi-additive measure on subrectangles of $X \times Y$. Then the following estimate holds:
+\[
+C^R(f) \ge \frac{w(X \times Y)}{\max\limits_{\text{mono. } A \times B} w(A \times B)}.
+\]
+
+\paragraph{Fooling Set Method.} This is a special case of the rectangle size method, where a certain set $F \subset X \times Y$ is fixed, and the measure $w$ is defined as follows:
+\[
+w(A \times B) = |(A \times B) \cap F|.
+\]
+If no monochromatic rectangle contains more than one element from $F$, then $C^R(f) \ge |F|$.
+
+\paragraph{Matrix Rank Method.} Consider the \emph{function matrix $f$}—a matrix where the rows are indexed by the elements of $X$, the columns by the elements of $Y$, and the entry $(x,y)$ contains $f(x,y)$. If we regard this function matrix as a matrix $M$ over some sufficiently large field, it can be shown that $C^R(f) \ge \rank M$.
+
+\begin{exercise}
+    Prove the previous statements.
+\end{exercise}
+
+\begin{statement}
+    $D(\mathrm{EQ}_n) = n + 1$, where $\mathrm{EQ}_n(x,y) = 1 \iff x = y$.
+\end{statement}
+
+\begin{statement}
+    $D(\mathrm{GE}_n) = n + 1$, where $\mathrm{GE}_n(x,y) = 1 \iff x \ge y$.
+\end{statement}
+
+\subsection{Probabilistic Protocols}
+We can consider a communication game in which participants have the option to use random bits. This can be formalized as follows: Alice receives a pair $(x,r)$ as input, where $x \in X$, and $r$ is a random string. Similarly, Bob receives a pair $(y,s)$ where $y \in Y$, and $s$ is a random string. The functions $g_v$ and $h_v$ written at the vertices of the protocol for such a game will take two arguments—the input and the random string, i.e., the messages sent can depend on the random bits. Accordingly, the result of the game will depend on $x,y,r,s$.
+
+\begin{definition}
+    We say that a probabilistic protocol $\epsilon$-computes $f$ if for any pair $x,y$, with probability (over the choice of $(r,s)$) at least $1 - \epsilon$, the result of the protocol equals $f(x,y)$ (from the perspective of both players). The minimum height of a probabilistic protocol that $\epsilon$-computes $f$ is denoted by $R^\epsilon(f)$.
+\end{definition}
+
+\begin{exercise}
+    Prove that $R^\epsilon(\mathrm{EQ}_n) = O(\log n + \log(1/\epsilon))$.
+\end{exercise}
+
+\begin{exercise}
+    Prove that $R^\epsilon(\mathrm{GE}_n) = O(\log n(\log n + \log(1/\epsilon)))$.
+\end{exercise}
+
+\begin{exercise}
+    Prove that if Alice and Bob have access to a common source of randomness (i.e., $r = s$), they can $\epsilon$-compute the predicate $\mathrm{EQ}_n$ by sending $O(\log(1/\epsilon))$ bits.
+\end{exercise}
+
+\begin{exercise}
+    Prove that if Alice and Bob have access to a common source of randomness, then for any fixed positive $\epsilon$, they can $\epsilon$-compute the predicate $\mathrm{GE}_n$ with an error of at most $\epsilon$ by sending $O(\log n)$ bits.
+\end{exercise}
+
+\subsection{Connection Between Protocols and Formulas}
+\begin{definition}
+    \emph{Karchmer-Wigderson game for the function $f : \{0,1\}^n \to \{0,1\}$} is the following communication game: Alice receives $x \in f^{-1}(0)$, Bob receives $y \in f^{-1}(1)$, and they together try to find an index $i \in [n]$ such that $x_i \neq y_i$. In other words, the Karchmer-Wigderson game is a communication task for the \emph{relation}
+    $$R_f = \{((x,y),i) \mid x \in f^{-1}(0), y \in f^{-1}(1), x_i \neq y_i\}.$$
+    The relation $R_f$ is called the \emph{Karchmer-Wigderson relation} for the function $f$.
+\end{definition}
+
+\begin{definition}
+    \emph{A formula in De Morgan's basis for the function $f:\{0,1\}^n \to \{0,1\}$} is a boolean formula with variables $\{\seqn{x}{n}\}$ corresponding to the individual bits of the input to $f$, and with connectives $\{\land, \lor, \neg\}$, computing the function $f$. De Morgan's laws allow us to assume that all $\neg$ are positioned directly in front of the variables. Note that the structure of a De Morgan formula represents a rooted tree (the leaves correspond to variables, and the internal vertices correspond to logical connectives).
+\end{definition}
+
+We call the \emph{formula complexity} $L(f)$ of the function $f : \{0,1\}^n \to \{0,1\}$ the size (the number of variable occurrences) of the smallest formula that computes $f$. More formally, we should not speak about a specific function, but about a sequence of functions.
+
+\begin{definition}
+    For the function $f:\bitstr\to\{0,1\}$, we define a sequence of functions $\{\seqn{f}{n},\dotsc\}$, where $f_i: \{0,1\}^i\to\{0,1\}$ and $\forall x\in\{0,1\}^i, f(x) = f_i(x)$. Then, the formula complexity $L(f)$ of the function $f$ is bounded by $g(n)$ if for every $n$ there exists a formula $\phi_n$ of size at most $g(n)$ that computes the function $f_n$.
+\end{definition}
+
+\begin{theorem}[Shannon]
+    There exists a function $f$ such that $L(f) = \Omega(2^n/n)$.
+\end{theorem}
+\begin{proof}
+    Let $n \ge 2$. We will count the number of formulas of size at most $s$ (here, by the size of the formula, we mean the number of vertices in the tree corresponding to the formula). We will number the vertices of the tree level by level from the root to the leaves (the root will have number 1, its children will have numbers 2 and 3, etc.). Now, for each vertex in this order, we will write a brief description: for internal vertices, the description will be the operation at the vertex (either $\land$ or $\lor$), for leaves labeled $x_i$ we write $(i, +)$, and for leaves labeled $\neg x_i$, we write $(i,-)$. As a result, we obtain a sequence of $s$ elements, from which we can reconstruct the original formula. The number of distinct sequences of this kind does not exceed $(3n)^s$.
+
+    At the same time, the total number of functions
+    $f: \{0,1\}^n \to \{0,1\}$ is exactly $2^{2^n}$. What must $s$ be for the number of distinct formulas to be sufficient to compute all functions on $n$ bits?
+    $$(3n)^s \ge 2^{2^n} \implies s \cdot \log(3n) \ge 2^n \implies s = \Omega(2^n/n).$$
+    Since a formula defines a binary tree, the number of vertices and the number of leaves (the number of variable occurrences) differ only by a factor of two.
+\end{proof}
+
+\begin{remark}
+    This counting shows that there exist functions with exponential formula complexity. Moreover, any random function has this complexity with high probability. However, it is not known if there are \emph{explicit} functions of high complexity. The best-known lower bound on the formula complexity of an explicit function is $\tilde\Omega(n^3)$ (the bound for Andreev's function, proven by Håstad).
+\end{remark}
+
+\begin{theorem}[Karchmer, Wigderson, 1988]
+    For every formula $\phi$ computing $f$, there exists a protocol $\Pi_\phi$ for the Karchmer-Wigderson relation $R_f$ such that its tree coincides with the tree describing the structure of the formula $\phi$. The converse is also true: if there is a protocol for $R_f$, then there is a formula for $f$ with the same structure.
+\end{theorem}
+
+\begin{proof}
+    Alice's move will correspond to the connective $\land$, while Bob's move will correspond to the connective $\lor$.
+
+    \begin{itemize}
+        \item \textbf{formula $\to$ protocol}\\
+        Each internal vertex of the protocol corresponds to some subformula of the original formula $\phi$. We will maintain the following invariant: let $\phi_v$ be the subformula corresponding to the current vertex $v$ of the protocol, then $\phi_v(x) = 0$ and $\phi_v(y) = 1$. This holds for the initial vertex (since it holds for $\phi$). If this is true for the current vertex, and $\phi_v = \phi_{v0} \land \phi_{v1}$, then Alice sends a bit $b$ such that $\phi_{vb}(x) = 0$ (such a bit must exist by the properties of $\land$, since $\phi_v(x) = 0$). At the same time, we know that $\phi_v(y) = \phi_{v0}(y) = \phi_{v1}(y) = 1$, i.e., the invariant is maintained. Similarly, if $\phi_v = \phi_{v0} \lor \phi_{v1}$, then Bob sends a bit $b$ such that $\phi_{vb}(y) = 1$ (we correspondingly know that $\phi_v(x) = \phi_{v0}(x) = \phi_{v1}(x) = 0$). When Alice and Bob reach a leaf, by induction, it follows that the value at this leaf for Alice's input differs from the value at the leaf for Bob's input, meaning the variable number at the leaf corresponds to the index of the differing bit.
+
+        \item \textbf{protocol $\to$ formula}\\
+        We will consecutively build formulas for the internal vertices of the protocol from the leaves to the root. We will maintain the following invariant: let $v$ be a vertex of the protocol, and $X_v \times Y_v$ be the corresponding rectangle, then the formula $\phi_v$ for vertex $v$ is such that for all $x \in X_v$, $\phi_v(x) = 0$ and for all $y \in Y_v$, $\phi_v(y) = 1$. Let us assume we have built formulas $\phi_{v0}$ and $\phi_{v1}$ for the children of some vertex $v$. If the vertex $v$ corresponds to Alice's move, then for all Alice's inputs from the set $X_v$, the formula $\phi_v$ must equal 0. Moreover, by the inductive hypothesis, we know that for some inputs of Alice (on which Alice sends 0) $\phi_{v0} = 0$, and for the rest, it must be that $\phi_{v1} = 0$. On the other hand, for all Bob's inputs $y \in Y_v$, we have $\phi_{v0}(y) = \phi_{v1}(y) = 1$. Therefore, if we set $\phi_v = \phi_{v0} \land \phi_{v1}$, the invariant will hold. Similarly, if the vertex corresponds to Bob's move, we should set $\phi_v = \phi_{v0} \lor \phi_{v1}$.
+
+        Finally, we need to explain what we will do with the leaves. Note that if a certain index $i$ is written in a leaf of the protocol, then it can only include pairs of inputs for which either ($x_i = 0$, $y_i = 1$) or inputs for which ($x_i = 1$, $y_i = 0$), but cannot include both at the same time. Otherwise, one could use the properties of combinatorial rectangles and provide Alice and Bob with inputs having identical $i$-th bits that would lead to the same leaf.
+        \[
+        \begin{cases}
+            (x,y) \in R_\ell, & x_i = 0, y_i = 1,\\
+            (x',y') \in R_\ell, & x'_i = 1, y'_i = 0.
+        \end{cases} \implies (x', y) \in R_\ell.
+        \]
+        Thus, we can assume that in each leaf, in addition to the index of the differing bit, the values of this bit for Alice and Bob are also recorded. If in the leaf $\ell$ with the differing bit index $i$, it is recorded that ($x_i = 0$, $y_i = 1$), then $\phi_\ell = x_i$; otherwise, $\phi_\ell = \neg x_i$. \qedhere
+    \end{itemize}
+\end{proof}
+
+Thus, we have established a correspondence between protocols and formulas that preserves structure. The problem is that we previously measured the complexity of protocols in terms of maximum depth, while the complexity of formulas was measured in terms of the number of leaves. Let's define the complexity of a protocol in terms of the number of leaves.
+
+\begin{definition}
+    For the relation $R_f$, we denote by $L(R_f)$ the minimum number of leaves in a communication protocol for $R_f$.
+\end{definition}
+
+\begin{corollary}
+    For any function $f$, $L(f) = L(R_f)$.
+\end{corollary}
+
+With some loss, we can relate the minimum size of a formula for $f$ to the minimum depth of a formula for $f$.
+\begin{statement}[\cite{BB94}]
+    For any $\alpha > 1$, such that for any formula $\phi$ of size $s$, there exists an equivalent formula $\phi'$ of size $s^\alpha$ and depth $O(\log s)$ (the constant depends on $\alpha$).
+\end{statement}
+We will prove a weaker statement for a specific $\alpha \approx 4$.
+\begin{proof}
+    We define a recursive algorithm $A(\phi)$:
+    we find in $\phi$ a subformula $\psi$ of size from $s/3$ to $2s/3$.
+    We return $\phi' = (A(\psi) \land A(\phi|_{\psi = 1})) \lor (\neg A(\psi) \land A(\phi|_{\psi = 0})).$
+    The depth of recursion will be $\log_{3/2}(s)$, increasing the depth by two at each iteration.
+    Therefore, the total depth is $2 \cdot \log_{3/2}(s)$. Thus, the size of the formula $\phi'$ is at most
+    $2^{2 \cdot \log_{3/2}(s)} = O(s^4).$
+\end{proof}
+
+\begin{definition}
+    Let $\mu$ be some distribution over the inputs of Alice and Bob,
+    and $X$, $Y$ be the corresponding random variables.
+    The \emph{external information cost} of protocol $\Pi$ on distribution $\mu$ is:
+    $$\IC_\mu^{ext}(\Pi) = I(\Pi(X,Y) : X, Y).$$
+    The \emph{internal information cost} of protocol $\Pi$ on distribution $\mu$ is:
+    $$\IC_\mu^{int}(\Pi) = I(\Pi(X,Y) : X \mid Y) + I(\Pi(X,Y) : Y \mid X).$$
+\end{definition}
+
+\begin{lemma}
+    For any protocol $\Pi$ and any distribution $\mu$,
+    \[
+    D(\Pi) \ge \IC_\mu^{ext}(\Pi) \ge \IC_\mu^{int}(\Pi).
+    \]
+\end{lemma}
+\begin{proof}
+    The first inequality is trivial (one cannot disclose more information than the number of bits transmitted).
+
+    The second inequality can be reduced to statement~\ref{st:entropy:triple-rect}. First, let's express mutual information in terms of entropy.
+    \[
+    \IC_\mu^{ext}(\Pi) = I(\Pi(X,Y) : X, Y) = H(\Pi(X,Y)) - H(\Pi(X,Y) \mid X, Y) = H(\Pi(X,Y)).
+    \]
+    The last equality holds because the protocol is deterministic and $\Pi(X,Y)$ is completely determined by the values of $X$ and $Y$.
+    Similarly, we obtain
+    \[
+    \IC_\mu^{int}(\Pi) = H(\Pi(X,Y) \mid Y) + H(\Pi(X,Y) \mid X).
+    \]
+    It remains to ensure that $a = \Pi(X,Y)$, $x = X$, $y = Y$ satisfy the conditions of statement~\ref{st:entropy:triple-rect},
+    and hence
+    \[
+    H(\Pi(X,Y)) \ge H(\Pi(X,Y) \mid Y) + H(\Pi(X,Y) \mid X).
+    \]
+\end{proof}
+
+\begin{theorem}[\cite{DMWW12}]
+    Let $\Pi$ be a communication protocol. For any distribution $\mu$:
+    \(
+    \log L(\Pi) \ge \IC_\mu^{ext}(\Pi).
+    \)
+    Furthermore, there exists a distribution $\mu^*$ for which
+    \(
+    \log L(\Pi) = \IC_{\mu^*}^{ext}(\Pi).
+    \)
+    We will call $\mu^*$ the \emph{hardest} distribution for $\Pi$.
+\end{theorem}
+\begin{proof} For deterministic protocols, $\IC^{ext}(\Pi) = H_\mu(\Pi)$.
+    The first statement of the theorem follows from the upper bound on entropy (the entropy
+    of a random variable does not exceed the logarithm of the number of outcomes):
+    \[
+    \IC_\mu^{ext}(\Pi) = H_\mu(\Pi) \le \log L(\Pi).
+    \]
+
+    To prove the second statement, we present the distribution $\mu^*$:
+    we randomly (uniformly) select a leaf $l$ of the protocol $\Pi$ and in the corresponding rectangle $R_l$, we choose any pair $(x,y)$. The resulting distribution $\mu^*$ is uniform over the leaves of $\Pi$, therefore
+    \[
+    \IC_{\mu^*}^{ext}(\Pi) = H_{\mu^*}(\Pi) = \log L(\Pi).
+    \]
+\end{proof}
+
+\begin{corollary}
+    Let $f$ be a boolean function, $s \in \mathbb{N}$. $L(f) \ge s$ if and only if there exists a distribution $\mu$ for any protocol $\Pi$ for $R_f$ such that:
+    $\IC_\mu^{ext}(\Pi) \ge \log s$.
+\end{corollary}
+
+\begin{theorem}[Khrapchenko]
+    $L(\oplus_n) \ge n^2$.
+\end{theorem}
+\begin{proof}
+    We will show that for any protocol there exists a distribution $\mu$: $\IC^{ext}_\mu(\Pi) \ge 2\log n$.
+    From this, it directly follows that $L(\oplus_n) \ge n^2$.
+    The distribution $\mu$ will be the uniform distribution over pairs of the form $(x,x \oplus e_i)$,
+    where $\oplus_n(x) = 0$, and the string $e_i$ has a 1 in position $i$ and 0s in all other positions.
+    That is, the pairs of inputs from the distribution $\mu$ will always differ in exactly one bit.
+    \[
+    \IC_\mu^{ext}(\Pi)
+    \ge \IC_\mu^{int}(\Pi)
+    = I(\Pi:X \mid Y) + I(\Pi:Y \mid X).
+    \]
+    Let's consider one of the summands $I(\Pi:X \mid Y)$.
+    \[\begin{aligned}
+        I(\Pi:X \mid Y) &= H(X \mid Y) - H(X \mid Y,\Pi)\\
+        &= H(i \mid Y) - H(i \mid Y,\Pi)\\
+        &= \log n - 0.
+    \end{aligned}\]
+    Thus, $\IC_\mu^{ext}(\Pi) \ge 2\log n$.
+\end{proof}
+
+\begin{exercise}
+    Prove that for any boolean function $f$ and any distribution $\mu$,
+    there exists a protocol $\Pi$ for $R_f$: $\IC^{int}_\mu(\Pi) \le 2\log n$.
+\end{exercise}
+\begin{exercise}
+    We will call the \emph{universal relation} for strings of length $n$ the relation
+    $U_n = \{(x,y,i) \mid x,y \in \bits^n, x_i \neq y_i\}$ (this is a generalization of the concept
+    of the Karchmer-Wigderson relation). We will call the \emph{extended universal relation} for strings of length $n$ the relation
+    $U'_n = U_n \cup \{(x,x,\perp) \mid x \in \bits^n\}$
+    (by solving the communication problem for the extended universal relation,
+    Alice and Bob may obtain \emph{identical} strings, and then they should respond with $\perp$).
+
+    Prove the following statements:
+    \begin{enumerate}
+        \item $4 \cdot L(U_n) \ge L(U'_n) \ge L(U_n)$.
+        \item $L(U'_n) \ge 2^n$.
+    \end{enumerate}
+\end{exercise}
+\begin{exercise}
+    Let $f:\bits^n \to \bits$ be some boolean function. We define the function $(\lor_m \circ f): \bits^{m \times n} \to \bits$
+    as follows: $$(\lor_m \circ f)(\seqn{x}{m}) = f(x_1) \lor f(x_2) \lor \dotsb \lor f(x_m),$$
+    where $x_i \in \bits^n$ (i.e., we have defined the composition of function $\lor_m$ and $f$). Prove that $L(\lor_m \circ f) =
+    m \cdot L(f)$.
+\end{exercise}
+
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{thebibliography}{9}

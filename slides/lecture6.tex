@@ -1,0 +1,516 @@
+% !TeX spellcheck = en_US
+\documentclass[
+%handout,
+aspectratio=169]{beamer}
+\usetheme{default}
+
+\usepackage{tikz}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\pitem}{\pause\item}
+
+\newtheorem{statement}{Statement}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\newenvironment{sol}{%
+    \begin{block}{}%
+        \setbeamercolor{block body}{bg=lightgray}%
+    }{
+\end{block}}
+
+\AtBeginSection[]{
+    \begin{frame}
+        \vfill
+        \centering
+        \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+            \usebeamerfont{title}\insertsectionhead\par%
+        \end{beamercolorbox}
+        \vfill
+    \end{frame}
+}
+
+
+\title{Communication Complexity}
+\author{Alexander Smal at NUP}
+\date{20.11.2024.\\ Lecture 6}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Communication Complexity Model}
+    \begin{itemize}
+    \item Let $X$, $Y$, and $Z$ be finite sets, and let $f: X \times Y \to Z$.
+
+    \pitem Two players, Alice and Bob, solve the \emph{communication problem for the function $f$}:
+    \begin{enumerate}
+        \item The sets $X$, $Y$, $Z$, and the function $f$ are known to both players,
+        \item Alice knows some $x \in X$,
+        \item Bob knows some $y \in Y$,
+        \item Alice and Bob want to compute $f(x,y)$.
+    \end{enumerate}
+
+    \pitem To solve the communication problem, Alice and Bob can exchange bit messages.
+
+    \pitem The problem is solved if both players know $f(x,y)$.
+
+    \pitem We are interested in the minimum number of bits that need to be sent in order to compute $f(x,y)$.
+    \end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{
+    treenode/.style = {align=center, inner sep=0pt, text centered, font=\sffamily},
+    leaf/.style = {treenode, rectangle, draw, color=black!50, text=black, text width=1.5em, minimum height=1em},
+    vert/.style = {treenode, circle, draw, text width=1.5em, thick},
+    pbox/.style = {treenode, rectangle, draw, text width=2em, minimum height=2em, thick},
+    alice/.style = {color=red!60!black!60},
+    bob/.style   = {color=blue!60!black!60},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Communication Complexity Model}
+    Introduced by Andrew Yao in 1979.\medskip
+    \begin{center}
+        \begin{tikzpicture}
+            \node[label=above:Alice]    (A) at (0,3.5)
+            {\includegraphics[height=1cm]{alice}};
+            \node[label=above:Bob]      (B) at (8,3.5)
+            {\includegraphics[height=1cm]{bob}};
+            \node () at (4,4) {};
+            \node () at (4,-2.1) {};
+
+            \node () at (0,2) {\phantom{$x\in\{0,1\}^n$}};
+            \node () at (8,2) {\phantom{$y\in\{0,1\}^n$}};
+
+            \node<2-> () at (0,2) {$x\in\{0,1\}^n$};
+            \node<2-> () at (8,2) {$y\in\{0,1\}^n$};
+
+            \path<4-> (1.5,4.5) edge[->,thick] node[below]{$b_1$} (6.5,4.5);
+            \path<5-> (1.5,3.5) edge[->,thick] node[below]{$b_2$} (6.5,3.5);
+            \path<6-> (1.5,2.5) edge[<-,thick] node[below]{$b_3$} (6.5,2.5);
+
+            \node<3-> () at (4,0) {Alice and Bob want to compute $f(x,y)$.};
+
+        \end{tikzpicture}
+    \end{center}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Communication Protocol}
+    \begin{center}
+        \begin{tikzpicture}[->,level/.style={sibling distance = 3cm/#1,
+                level distance = 1.1cm}]
+            \node [vert,alice] {A}
+            child{ node [vert, alice] {A}
+                child{ node [vert, bob] {B}
+                    child{ node [leaf] {0} edge from parent node[above left] {$0$}} %for a named pointer
+                    child{ node [vert, bob] {B}
+                        child{ node [leaf] {0} edge from parent node[above left]{$0$}}
+                        child{ node [leaf] {1} edge from parent node[above right]{$1$}}
+                        edge from parent node[above right]{$1$}
+                    }
+                    edge from parent node[above left]{$0$}
+                }
+                child{ node [leaf] {1} edge from parent node[above right]{$1$}}
+                edge from parent node[above left]{$0$}
+            }
+            child{ node [vert, bob] {B}
+                child{ node [vert, alice] {A}
+                    child{ node [vert, bob]  {B}
+                        child{ node [leaf] {1} edge from parent node[above left]{$0$}}
+                        child{ node [leaf] {0} edge from parent node[above right]{$1$}}
+                        edge from parent node[above left]{$0$}
+                    }
+                    child{ node [leaf] {1} edge from parent node[above right]{$1$}}
+                    edge from parent node[above left]{$0$}
+                }
+                child{node [leaf] {0} edge from parent node[above right]{$1$}}
+                edge from parent node[above right]{$1$}
+            }
+            ;
+            \node[label=above:Alice]    (A) at (-4,-1) {\includegraphics[height=1cm]{alice}};
+            \node[label=above:Bob]      (B) at (4, -1) {\includegraphics[height=1cm]{bob}};
+        \end{tikzpicture}
+    \end{center}
+    \emph{Communication complexity} of $f$ is a minimal depth of
+    a~protocol solving $f$, denoted $D(f)$. The same definition for relations.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Examples}
+    \begin{statement}
+        For any $f: \{0,1\}^n \times\{0,1\}^n \to \bits$, $D(f) \le n + 1$.
+    \end{statement}
+
+    \pause
+    Examples of functions with non-trivial upper bounds on communication complexity.
+    \begin{enumerate}
+        \item (Pointer Chasing) $D(\mathrm{PC}) \le k \log n$,
+        where \[PC(x,y) = \underbrace{x(y(x(y\dotsb(x(y(x(y(x}_{\text{$k$ rounds}}(0))))))\dotsb))),\]
+        $x$ and $y$ define a bipartite directed graph on $2n$ vertices with out-degree each vertex equal to $1$.
+        They start with Alice's vertex $0$ and output the final vertex.
+
+
+        \pitem $D(\mathrm{MED}) = O(\log^2 n)$, where $x$ and $y$ are interpreted as characteristic functions of subsets of $[n]$, and $\mathrm{MED}(x,y)$ is the median of their union.
+
+        \pitem $D(\mathrm{CIS}_G) = O(\log^2 n)$, where $x$ is interpreted as the characteristic function of some clique in the graph $G$, and $y$ as the characteristic function of some independent set in the graph $G$. $\mathrm{CIS}(x,y) = 1$ if the clique and the independent set share a vertex.
+    \end{enumerate}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Lower Bounds}
+    Consider a communication protocol for $f: X \times Y \to Z$. For each vertex $v$, we define the set $R_v \subset X \times Y$—the set of all pairs $(x,y) \in X \times Y$ for which the computation reaches vertex $v$.
+
+    \pause
+    \begin{statement}
+        For all vertices $v$, the set $R_v$ is a combinatorial rectangle, i.e., there exist subsets $X_v \subset X$ and $Y_v \subset Y$ such that $R_v = X_v \times Y_v$.
+    \end{statement}
+
+    \pause
+    \begin{corollary}
+        The leaves of the communication protocol for the function $f$ define a partition of the set $X \times Y$ into monochromatic rectangles.
+    \end{corollary}
+
+    Let $C^R(f)$ denote the minimum number of \emph{monochromatic} rectangles covering $X \times Y$.
+
+    \pause
+    \begin{statement}
+        $D(f) \ge \log C^R(f)$.
+    \end{statement}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Rectangle Size Method}
+    We define a certain semi-additive measure on subrectangles of $X \times Y$. Then the following estimate holds:
+    \[
+    C^R(f) \ge \frac{w(X \times Y)}{\max\limits_{\text{mono. } A \times B} w(A \times B)}.
+    \]
+
+    \pause
+    \begin{block}{Fooling Set Method}
+        This is a special case of the rectangle size method, where a certain set $F \subset X \times Y$ is fixed, and the measure $w$ is defined as follows:
+        \[
+        w(A \times B) = |(A \times B) \cap F|.
+        \]
+        If no monochromatic rectangle contains more than one element from $F$, then $C^R(f) \ge |F|$.
+    \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Matrix Rank Method}
+    \begin{itemize}
+        \item Consider the \emph{function matrix $f$}---a matrix where
+        \begin{itemize}
+            \item the rows are indexed by the elements of $X$,
+            \item the columns by the elements of $Y$,
+            \item the entry $(x,y)$ contains $f(x,y)$.
+        \end{itemize}
+        \pitem Consider the function matrix as a matrix $M$ over some sufficiently large field.
+        \pitem One can show that $C^R(f) \ge \rank M$.
+    \end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Exercises}
+
+\begin{statement}
+    $D(\mathrm{EQ}_n) = n + 1$, where $\mathrm{EQ}_n(x,y) = 1 \iff x = y$.
+\end{statement}
+
+\pause
+\begin{statement}
+    $D(\mathrm{GE}_n) = n + 1$, where $\mathrm{GE}_n(x,y) = 1 \iff x \ge y$.
+\end{statement}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Probabilistic Protocols}
+    \begin{itemize}
+    \item Alice receives a pair $(x,r)$ as input, where $x \in X$, and $r$ is a random string.
+    \pitem Bob receives a pair $(y,s)$ where $y \in Y$, and $s$ is a random string.
+    \pitem The functions $g_v$ and $h_v$ written at the vertices of the protocol for such a game will take two arguments—the input and the random string, i.e., the messages sent can depend on the random bits.
+
+    \pitem Accordingly, the result of the game will depend on $x,y,r,s$.
+    \end{itemize}
+
+    \pause
+    \begin{definition}
+        A probabilistic protocol $\epsilon$-computes $f$ if for any pair $x,y$, with probability (over the choice of $(r,s)$) at least $1 - \epsilon$, the result of the protocol equals $f(x,y)$. The minimum height of a probabilistic protocol that $\epsilon$-computes $f$ is denoted by $R^\epsilon(f)$.
+    \end{definition}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Examples}
+    \begin{statement}
+        $R^\epsilon(\mathrm{EQ}_n) = O(\log n + \log(1/\epsilon))$.
+    \end{statement}
+
+    \pause
+    \begin{statement}
+        Prove that $R^\epsilon(\mathrm{GE}_n) = O(\log n(\log n + \log(1/\epsilon)))$.
+    \end{statement}
+
+    \pause
+    \begin{statement}
+        If Alice and Bob have access to a common source of randomness (i.e., $r = s$), they can $\epsilon$-compute the predicate $\mathrm{EQ}_n$ by sending $O(\log(1/\epsilon))$ bits.
+    \end{statement}
+
+    \pause
+    \begin{statement}
+        If Alice and Bob have access to a common source of randomness, then for any fixed positive $\epsilon$, they can $\epsilon$-compute the predicate $\mathrm{GE}_n$ with an error of at most $\epsilon$ by sending $O(\log n)$ bits.
+    \end{statement}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Connection Between Protocols and Formulas}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Karchmer--Wigderson game}
+    The \alert{Karchmer--Wigderson game} for $f:\{0,1\}^n\to \{0,1\}$:
+    \begin{center}
+        \begin{tikzpicture}[->,level/.style={sibling distance = 3cm/#1,
+                level distance = 1.2cm}]
+            \node [vert,alice] {A}
+            child{ node [vert, alice] {A}
+                child{ node [vert, bob] {B}
+                    child{ node [leaf] {1} edge from parent node[above left] {$0$}} %for a named pointer
+                    child{ node [vert, bob] {B}
+                        child{ node [leaf] {2} edge from parent node[above left]{$0$}}
+                        child{ node [leaf] {3} edge from parent node[above right]{$1$}}
+                        edge from parent node[above right]{$1$}
+                    }
+                    edge from parent node[above left]{$0$}
+                }
+                child{ node [leaf] {1} edge from parent node[above right]{$1$}}
+                edge from parent node[above left]{$0$}
+            }
+            child{ node [vert, bob] {B}
+                child{ node [vert, alice] {A}
+                    child{ node [vert, bob]  {B}
+                        child{ node [leaf] {4} edge from parent node[above left]{$0$}}
+                        child{ node [leaf] {1} edge from parent node[above right]{$1$}}
+                        edge from parent node[above left]{$0$}
+                    }
+                    child{ node [leaf] {2} edge from parent node[above right]{$1$}}
+                    edge from parent node[above left]{$0$}
+                }
+                child{node [leaf] {3} edge from parent node[above right]{$1$}}
+                edge from parent node[above right]{$1$}
+            }
+            ;
+            \node[label=above:Alice,label=below:$x\in f^{-1}(0)$]
+            (A) at (-4,-1) {\includegraphics[height=1cm]{alice}};
+            \node[label=above:Bob, label=below:$y\in f^{-1}(1)$]
+            (B) at (4, -1) {\includegraphics[height=1cm]{bob}};
+        \end{tikzpicture}
+    \end{center}
+    Players want to find an index $i\in[n]$ such that $x_i\neq
+    y_i$.\medskip
+
+    \pause Communication game for $R_f = \{((x,y),i) \mid x \in f^{-1}(0), y \in f^{-1}(1), x_i \neq y_i\}.$
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Karchmer-Wigderson Theorem}
+    \centering
+        \begin{tikzpicture}[->,level/.style={sibling distance = 2.5cm/#1,
+                level distance = 1.2cm}]
+            \begin{scope}
+            \node [vert,alice] {A}
+            child{ node [vert, alice] {A}
+                child{ node [vert, bob] {B}
+                    child{ node [leaf] {1} } %for a named pointer
+                    child{ node [vert, bob] {B}
+                        child{ node [leaf] {2} }
+                        child{ node [leaf] {3} }
+                    }
+                }
+                child{ node [leaf] {1} }
+            }
+            child{ node [vert, bob] {B}
+                child{ node [vert, alice] {A}
+                    child{ node [vert, bob]  {B}
+                        child{ node [leaf] {4} }
+                        child{ node [leaf] {1} }
+                    }
+                    child{ node [leaf] {2} }
+                }
+                child{node [leaf] {3}}
+            }
+            ;
+            \node at (3.5, -2.5) {$\Longleftrightarrow$};
+            \node at(0, -5.5) {Protocol for $KW_f$};
+        \end{scope}
+        \begin{scope}[xshift=7cm]
+            \node [vert,alice] {$\land$}
+            child{ node [vert, alice] {$\land$}
+                child{ node [vert, bob] {$\lor$}
+                    child{ node [leaf] {$x_1$}} %for a named pointer
+                    child{ node [vert, bob] {$\lor$}
+                        child{ node [leaf] {$\lnot x_2$}}
+                        child{ node [leaf] {$x_3$}}
+                    }
+                }
+                child{ node [leaf] {$x_1$}}
+            }
+            child{ node [vert, bob] {$\lor$}
+                child{ node [vert, alice] {$\land$}
+                    child{ node [vert, bob]  {$\lor$}
+                        child{ node [leaf] {$\lnot x_4$}}
+                        child{ node [leaf] {$x_1$}}
+                    }
+                    child{ node [leaf] {$x_2$}}
+                }
+                child{node [leaf] {$\lnot x_3$}}
+            }
+            ;
+            \node at(0, -5.5) {De~Morgan formula for $f$};
+        \end{scope}
+        \end{tikzpicture}
+
+        \pause
+        \textbf{Corollary:} For any function $f$, $L(f) = L(R_f)$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Theorems}
+   \begin{theorem}[Shannon]
+       There exists a function $f$ such that $L(f) = \Omega(2^n/n)$.
+   \end{theorem}
+
+   \pause
+   \begin{theorem}[Håstad]
+        There exists an \emph{implicit} function $f$ such that $L(f) = \tilde\Omega(n^3)$.
+   \end{theorem}
+
+   \pause
+   \begin{theorem}[Bonet, Buss]
+        For any $\alpha > 1$, such that for any formula $\phi$ of size $s$, there exists an equivalent formula $\phi'$ of size $s^\alpha$ and depth $O(\log s)$ (the constant depends on $\alpha$).
+   \end{theorem}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Information Cost}
+
+    \begin{itemize}
+        \item
+            Let $\mu$ be some distribution over the inputs of Alice and Bob,
+            and $X$, $Y$ be the corresponding random variables.
+
+        \pitem The \emph{external information cost} of protocol $\Pi$ on distribution $\mu$ is:
+            $$\IC_\mu^{ext}(\Pi) = I(\Pi(X,Y) : X, Y).$$
+
+
+        \pitem The \emph{internal information cost} of protocol $\Pi$ on distribution $\mu$ is:
+            $$\IC_\mu^{int}(\Pi) = I(\Pi(X,Y) : X \mid Y) + I(\Pi(X,Y) : Y \mid X).$$
+    \end{itemize}
+
+    \pause
+    \begin{lemma}
+        For any protocol $\Pi$ and any distribution $\mu$,
+        \[
+        D(\Pi) \ge \IC_\mu^{ext}(\Pi) \ge \IC_\mu^{int}(\Pi).
+        \]
+    \end{lemma}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Hardest distribution}
+\begin{theorem}
+    Let $\Pi$ be a communication protocol. For any distribution $\mu$:
+    \(
+    \log L(\Pi) \ge \IC_\mu^{ext}(\Pi).
+    \)
+    Furthermore, there exists a distribution $\mu^*$ for which
+    \(
+    \log L(\Pi) = \IC_{\mu^*}^{ext}(\Pi).
+    \)
+    We will call $\mu^*$ the \emph{hardest} distribution for $\Pi$.
+\end{theorem}\pause
+\begin{proof} For deterministic protocols, $\IC^{ext}(\Pi) = H_\mu(\Pi)$.
+    The first statement of the theorem follows from the upper bound on entropy (the entropy
+    of a random variable does not exceed the logarithm of the number of outcomes):
+    \[
+    \IC_\mu^{ext}(\Pi) = H_\mu(\Pi) \le \log L(\Pi).
+    \]
+
+    \pause
+    To prove the second statement, we present the distribution $\mu^*$:
+    we randomly (uniformly) select a leaf $l$ of the protocol $\Pi$ and in the corresponding rectangle $R_l$, we choose any pair $(x,y)$. The resulting distribution $\mu^*$ is uniform over the leaves of $\Pi$,
+    \[
+    \IC_{\mu^*}^{ext}(\Pi) = H_{\mu^*}(\Pi) = \log L(\Pi).
+    \]
+\end{proof}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Khrapchenko's Theorem}
+\begin{theorem}[Khrapchenko]
+    $L(\oplus_n) \ge n^2$.
+\end{theorem}
+\begin{proof}
+    We will show that for any protocol there exists a distribution $\mu$: $\IC^{ext}_\mu(\Pi) \ge 2\log n$.
+    \pause
+    It immediately implies that $L(\oplus_n) \ge n^2$.
+    The distribution $\mu$ will be the uniform distribution over pairs of the form $(x,x \oplus e_i)$,
+    where $\oplus_n(x) = 0$, and the string $e_i$ has a 1 in position $i$ and 0s in all other positions.
+    \pause
+    \[
+    \IC_\mu^{ext}(\Pi)
+    \ge \IC_\mu^{int}(\Pi)
+    = I(\Pi:X \mid Y) + I(\Pi:Y \mid X).
+    \]
+    \pause Let's consider one of the terms $I(\Pi:X \mid Y)$.
+    \[\begin{aligned}
+        I(\Pi:X \mid Y) &= H(X \mid Y) - H(X \mid Y,\Pi)\\
+        &= H(i \mid Y) - H(i \mid Y,\Pi) = \log n - 0.
+    \end{aligned}\]
+    \pause Thus, $\IC_\mu^{ext}(\Pi) \ge 2\log n$.
+    \end{proof}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
