@@ -1,0 +1,286 @@
+% !TeX spellcheck = en_US
+\documentclass[
+%handout,
+aspectratio=169]{beamer}
+\usetheme{default}
+
+\usepackage{tikz}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\pitem}{\pause\item}
+
+\newtheorem{statement}{Statement}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\KL}{D_{KL}}
+\DeclareMathOperator{\CE}{CE}
+\newcommand{\midd}{\parallel}
+
+
+\newenvironment{sol}{%
+    \begin{block}{}%
+        \setbeamercolor{block body}{bg=lightgray}%
+    }{
+\end{block}}
+
+\AtBeginSection[]{
+    \begin{frame}
+        \vfill
+        \centering
+        \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+            \usebeamerfont{title}\insertsectionhead\par%
+        \end{beamercolorbox}
+        \vfill
+    \end{frame}
+}
+
+
+\title{Continuous Distributions and Applications to Machine Learning}
+\author{Alexander Smal at NUP}
+\date{04.12.2024.\\ Lecture 7}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Random variables over infinite sets}
+    \begin{block}{Exercise}
+         Consider a random variable $\alpha$ distributed over $\{0,1,2,\dotsc\}$,
+        such that $\Pr[\alpha = n] = p^n (1-p)$ for some $p\in(0,1)$.
+        \begin{enumerate}
+            \item Compute $H(\alpha)$ and $H(\alpha\mid \alpha>0)$.
+            \item How much do you learn from the fact that $\alpha > 0$?
+        \end{enumerate}
+    \end{block}
+    \vspace{5cm}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{
+    treenode/.style = {align=center, inner sep=0pt, text centered, font=\sffamily},
+    leaf/.style = {treenode, rectangle, draw, color=black!50, text=black, text width=1.5em, minimum height=1em},
+    vert/.style = {treenode, circle, draw, text width=1.5em, thick},
+    pbox/.style = {treenode, rectangle, draw, text width=2em, minimum height=2em, thick},
+    alice/.style = {color=red!60!black!60},
+    bob/.style   = {color=blue!60!black!60},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Differential Entropy}
+Let's try to generalize Shannon's entropy for the continuous case.
+
+For probability density function (p.d.f.) $\rho$, \emph{a differential entropy}
+\[
+H(\rho) = -\int\limits_{-\infty}^{\infty} \rho(x)\cdot\log \rho(x)\,dx,
+\]
+
+\begin{block}{Exercise}
+    Compute differential entropy of the following distributions.
+    \begin{itemize}
+        \item $\mathcal{U}(0,2)$
+        \item $\mathcal{U}(0,1)$
+        \item $\mathcal{U}(0,1/2)$
+        \item $\mathcal{N}(\mu,\sigma)$
+    \end{itemize}
+\end{block}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Approximation of a Random Variable}
+    Let $Q(\rho, \varepsilon)$ is the average number of yes/no question that
+    we need to guess a real value with random distribution $\rho$ with error at most $\varepsilon$.
+
+    Let's break the number line into segments of length $\epsilon$ and let $\{x_i\}$ be the centers of this segments.
+    \[
+    Q(\rho, \varepsilon) = -\sum_i \rho(x_i)\cdot\varepsilon\cdot\log(\rho(x_i)\cdot\varepsilon) \approx \log(1/\varepsilon) + H(\rho).
+    \]
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Normal Distribution}
+    \begin{theorem}
+        Let $\rho = \mathcal{N}(\mu,\sigma)$.
+        \[
+        H(\rho) = \frac{1}{2}(1+\log(e\pi\sigma^2)).
+        \]
+    \end{theorem}
+
+
+    \begin{theorem}
+        With a normal distribution, differential entropy is maximized for a given variance. A~Gaussian random variable has the largest entropy among all random variables of equal variance, or, alternatively, the maximum entropy distribution under constraints of mean and variance is the Gaussian.
+    \end{theorem}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Other Definitions}
+  We can define other informational quantities in the continuous setting.
+  The differential joint entropy is defined as
+  \[
+  H(X, Y) = - \int\limits_x\int\limits_y p_{X, Y}(x, y) \ \log p_{X, Y}(x, y) \;dx \;dy.
+  \]
+  The differential conditional entropy is similarly defined as
+  \[
+  H(Y \mid X) = - \int\limits_x \int\limits_y p(x, y) \ \log p(y \mid x) \;dx \;dy.
+  \]
+  The mutual information is defined as usual,
+  \[
+  I(X,Y) = H(Y) - H(Y \mid X) = H(X) + H(Y) - H(X,Y).
+  \]
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties}
+    Differential entropy has the following properties.
+    \begin{enumerate}
+        \item
+        Differential entropy is translation invariant, i.e. for a constant $c$, $H(X+c)=H(X)$.
+
+
+        \item     Differential entropy is not scale-invariant. For a constant $a$,
+        $H(aX)=H(X)+\log|a|$.
+
+
+        \item For two random variables $X$ and $Y$, $I(X:Y) \ge 0$ and $H(X\mid Y)\leq H(X)$ with equality if and only if $X$ and $Y$ are independent.
+    \end{enumerate}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Cross-Entropy}
+If $X\sim P$ with a p.d.f. or a p.m.f. $p(x)$, and we try to estimate by a new probability distribution $Q$ with a p.d.f. or a p.m.f. $q(x)$, then we can compute a~\emph{cross-entropy} of $P$ and $Q$.
+\[
+CE(P,Q) = \E_{x \sim P} [- \log q(x)] = \sum_{x} p(x)\cdot \log\frac{1}{q(x)}.
+\]
+Note that cross-entropy is always at least $H(X)$.
+\[
+CE(P, Q) = \E_{x \sim P} [- \log q(x)] \geq \E_{x \sim P} [- \log p(x)] = H(X),
+\]
+with equality if and only if $P = Q$.
+Alternatively, $H(X)$ gives a lower bound of the average number of bits needed to encode symbols drawn from $P$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kullback–Leibler Divergence}
+\emph{Kullback–Leibler (KL) divergence (relative entropy)} provides a way to measure if two distributions are close together or not.\medskip
+
+
+Given a random variable that follows the probability distribution with a p.d.f. (continuous) or a p.m.f. (discrete) $p(x)$, and we estimate by another probability distribution with a p.d.f. or a p.m.f. $q(x)$. \medskip
+
+
+Then KL divergence between $p(x)$ and $q(x)$ is
+\[
+\KL(P\parallel Q) = \E_{x \sim P} \left[ \log \frac{p(x)}{q(x)} \right] =
+\E_{x \sim P} [- \log q(x)] -  \E_{x \sim P} [- \log p(x)] = \CE(P,Q) - H(P).
+\]
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties of KL-divergence}
+    \begin{enumerate}
+        \item KL divergence is non-symmetric, i.e., there are $P,Q$ such that
+        $\KL(P\midd Q) \neq \KL(Q\midd P).$
+
+        \item
+        $\KL(P\midd Q) \geq 0.$
+        The equality holds only when $P=Q$.
+
+        \item If there exists an $x$ such that $p(x)>0$ and $q(x)=0$, then $\KL(P\midd Q) = \infty$.
+
+        \item There is a close relationship between KL divergence and mutual information.
+        \begin{enumerate}
+            \item $I(X:Y) = \KL(P(X, Y)\midd P(X)\cdot P(Y)).$\label{lst:KL-prop:3-1}
+            \item $I(X:Y) = \E_Y \{ \KL(P(X \mid Y) \midd P(X)) \}.$\label{lst:KL-prop:3-2}
+            \item $I(X:Y) = \E_X \{ \KL(P(Y \mid X) \midd P(Y)) \}.$\label{lst:KL-prop:3-3}
+        \end{enumerate}
+    \end{enumerate}
+    \begin{theorem}[Pinsker's inequality]
+        For two probability distributions $P$ and $Q$ on a measurable space $(X,\Sigma)$
+        \[
+        \delta (P,Q)\leq \sqrt{\frac{\KL(P\midd Q)}{2\log e}},
+        \]
+        where $\delta (P,Q)=\sup_{A\in \Sigma} \bigl \{ |P(A)-Q(A)|\bigr \}$ is the statistical distance between $P$ and $Q$.
+    \end{theorem}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Applications in Machine Learning}
+    \begin{block}{Feature Selection}
+        Feature selection aims to identify the most relevant features for building a predictive model. Information-theoretic measures like mutual information can quantify the relevance of each feature with respect to the target variable.
+
+        \textbf{Idea:} Calculate the mutual information between each feature and the target variable. Select features with the highest mutual information values.
+    \end{block}
+
+    \begin{block}{Classification}
+        Classification in machine learning performed by logistic regression or artificial neural networks often employs a standard loss function, called cross-entropy loss, that minimizes the average cross entropy between ground truth and predicted distributions.
+        Minimizing cross-entropy loss is equivalent to maximizing the log-likelihood function.
+    \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Applications in Machine Learning (part 2)}
+    \begin{block}{Decision Trees}
+
+        Decision trees use entropy and \emph{information gain} to split nodes and build a tree structure. Information gain, based on entropy, measures the reduction in uncertainty after splitting a node.
+        \emph{The information gain $IG(T,A)$} for a dataset $T$ and attribute $A$ is:
+        \[
+        IG(T,A) = H(T) - \sum_{v \in Values(A)} \frac{|T_v|}{|T|}\cdot H(T_v),
+        \]
+        where $T_v$ is the subset of $T$ with attribute $A$ having value $v$.
+    \end{block}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Applications in Machine Learning (part 3)}
+    \begin{block}{Information Bottleneck}
+        The information bottleneck method aims to find a compressed representation of the input data that retains maximal information about the output.
+
+        \textbf{Objective:} Maximize mutual information between the compressed representation and the output while minimizing mutual information between the input and the compressed representation.
+
+        \textbf{Applications:} Used in deep learning for learning efficient representations.
+    \end{block}
+
+    \begin{block}{Regularization and Model Selection}
+        KL divergence is used in regularization techniques like variational inference in Bayesian neural networks. By minimizing KL divergence between the approximate and true posterior distributions, we achieve better model regularization.
+    \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\end{document}

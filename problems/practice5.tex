@@ -1,0 +1,109 @@
+\documentclass[a4paper,14pt]{extarticle}
+%\usepackage[empty]{fullpage}
+\usepackage{cmap}
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb,amsmath,amsfonts}
+\usepackage{titling}
+\usepackage[useregional]{datetime2}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tikz}
+
+\pagenumbering{gobble}
+
+\newcommand*{\DKL}{\ensuremath{D_{\mathrm{KL}}}}
+
+\title{Practice 5}
+\date{\DTMdate{2027-11-27}}
+
+\preauthor{}
+\postauthor{}
+\author{}
+\setlength{\droptitle}{-50pt}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\begin{document}
+
+\maketitle
+
+\section*{Communication Complexity}
+
+\begin{enumerate}
+    \item
+    The function $GT_n$ is defined on pairs of natural numbers from $1$ to $2^n$ and takes the value $1$ if and only if $x > y$. Prove that $D(GT_n) = n+1$.
+
+    \item
+    Consider the function $SUM_n : \{0,1\}^n \times \{0,1\}^n \to \{0,1\}^{n+1}$, which returns the sum of numbers written in binary representation. Prove that $D(SUM_n) = 2n$.
+
+    \item
+    The function $IP_n$ is defined on pairs of binary strings of length $n$ and takes the value $1$ if and only if $\sum_i x_i\cdot y_i \equiv 1 \mod 2$. Prove that $D(IP_n) \geq n$.
+    (Hint: Evaluate the maximum size of a rectangle in a leaf with an answer of $0$.)
+
+    \item The function $DISJ_n$ is defined on pairs of binary strings of length $n$ and takes the value $1$ if and only if $\forall i,\ x_i\cdot y_i = 0$. Prove that $D(DISJ_n) \geq n$.
+
+
+    \item
+    Prove that the rank of the predicate matrix $DISJ_n$ is $2^n$.
+
+    \item
+    Prove that the rank of the predicate matrix $IP_n$ is at least $\varepsilon \cdot 2^n$ for some $\varepsilon > 0$.
+
+    \item
+    Let $x$ and $y$ be interpreted as characteristic functions of subsets of $[n]$, and let $\mathrm{MED}(x, y)$ be the median of their union (with repetitions).
+    Prove that $D(\mathrm{MED}) = O(\log^2{n})$.
+
+    \item
+    Prove that $D(\mathrm{MED}) = \Theta(\log{n})$.
+
+
+        \item
+        Prove that for any Boolean function $f$ and any distribution $\mu$, there exists a protocol $\Pi$ for the Karchmer-Wigderson game such that $\mathrm{IC}^{int}_\mu(\Pi) \leq 2\log n$.
+
+          \item
+        Define the function $(\lor_m \circ \oplus_n) : \bits^{m \times n} \to \bits$ as follows:
+        $$(\lor_m \circ \oplus_n)(\seqn{x}{m}) = \oplus_n(x_1) \lor \oplus_n(x_2) \lor \dotsb \lor \oplus_n(x_m),$$
+        where $x_i \in \bits^n$ (i.e., we define the composition of functions $\lor_m$ and $\oplus_n$).
+        Prove that $L(\lor_m \circ \oplus_n) = m \cdot L(\oplus_n) = 2mn^2$.
+        (Hint: Choose a distribution $\mu$ on the inputs of Alice and Bob such that $\mathrm{IC}_\mu^{ext} = \log m + 2\log n$.)
+
+
+        \item
+        Show that for almost all functions $f : \{0,1\}^n \times \{0,1\}^n \to \{0,1\}$, the communication complexity is $\Omega(n)$.
+
+        \item
+        Let $f$ be a symmetric function such that $f(v, v) = 0$. Prove that $\log{\chi(G(f))}$ does not exceed the communication complexity of the function $f$, where $\chi(G(f))$ is the chromatic number of the graph whose adjacency matrix matches the function $f$.
+
+        \item
+        Alice receives a string $x$ with more $1$s than $0$s, and Bob receives a string with more $0$s than $1$s. Show that the position of the differing bits can be computed by transmitting $2\log n + c$ bits. Moreover, prove that this bound is tight.
+
+        \item
+        Prove that $R^{\epsilon}(EQ_n) = O(\log{n} + \log{\frac{1}{\epsilon}})$, where $EQ_n$ is the equality function for two binary strings.
+
+        \item
+        Prove that $R^{\epsilon}(GE_n) = O(\log{n}(\log{n} + \log{\frac{1}{\epsilon}}))$, where $GE_n$ is the greater-than function for two binary strings.
+
+        \item
+        Prove that if Alice and Bob have access to a shared source of randomness, they can $\epsilon$-compute the predicate $EQ_n$ by transmitting $O(\log{\frac{1}{\epsilon}})$ bits.
+
+        \item
+        Show that if a Boolean matrix has rank $rkA = r$, then it has at most $2^r$ distinct rows and $2^r$ distinct columns. Furthermore, provide an example of a matrix with rank $r$ over the field $\mathbb{F}_2$, which has exactly $2^r$ distinct rows and $2^r$ distinct columns.
+
+        \item
+        Show that the communication complexity of computing an $m \times m$ matrix $M$ with ones on the diagonal is at least
+        $$\log{\frac{m^2}{|M|}},$$
+        where $|M|$ is the number of ones in the matrix $M$.
+
+
+
+
+\end{enumerate}
+
+\end{document}
