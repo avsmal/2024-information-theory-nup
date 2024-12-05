@@ -2311,6 +2311,7 @@ and the product of $P(X)$ and $P(Y)$, and thus is a measure of how different the
 \end{theorem}
 
 \subsection{Applications in Machine Learning}
+%TODO: Read https://spectra.mathpix.com/article/2021.09.00014/info-theory
 \subsubsection{Feature Selection}
 
 Feature selection aims to identify the most relevant features for building a predictive model. Information-theoretic measures like mutual information can quantify the relevance of each feature with respect to the target variable.
@@ -2344,6 +2345,1189 @@ The information bottleneck method aims to find a compressed representation of th
 \subsubsection{Classification}
 Classification in machine learning performed by logistic regression or artificial neural networks often employs a standard loss function, called cross-entropy loss, that minimizes the average cross entropy between ground truth and predicted distributions.
 Minimizing cross-entropy loss is equivalent to maximizing the log-likelihood function.
+
+
+\section{Algorithmic Approach}
+\subsection{Kolmogorov Complexity}
+How much information is in the first $10^{10}$ digits of the number $\pi$? There is quite little, but compressing such a large number of digits, for example, using Huffman coding, will not be possible.
+
+\begin{definition}
+    A partial function $f:\bitstr\to\bitstr$ is called \emph{computable} if there exists a program $P$ such that:
+    \begin{itemize}
+        \item for $\forall x \in \dom f$: $P(x)$ outputs $f(x)$,
+        \item for $\forall x \not\in \dom f$: $P(x)$ does not halt.
+    \end{itemize}
+\end{definition}
+
+\begin{definition}
+    Let $F:\bitstr\to\bitstr$ be a computable function. The \emph{description complexity relative to $F$} is defined as
+    \[K_F(x) = \min\{|p| : F(p) = x\}.\]
+\end{definition}
+
+\begin{definition}
+    We say that the description method $F$ is \emph{not worse} than $G$ and denote it by $F \prec G$ if there exists a constant $c_G$ such that for $\forall x \in \bitstr$,
+    \[K_F(x) \le K_G(x) + c_G.\]
+\end{definition}
+
+\begin{theorem}[Solomonov-Kolmogorov]\label{thm:solomonov-kolmogorov}
+    There exists a description method (computable function) $F$ such that for any other description method $G$, the relation $F \prec G$ holds.
+\end{theorem}
+
+We will first prove a simpler statement.
+\begin{statement}
+    Let $F$ and $G$ be two description methods. Then there exists a description method $H$ such that $H \prec F$ and $H \prec G$.
+\end{statement}
+
+\begin{proof}
+    Define $H$ as follows: $H(0x) = F(x)$, $H(1x) = G(x)$ (if for some input $x$ the values of $F(x)$ or $G(x)$ are not defined, then $H$ is also not defined for the corresponding input $0x$ or $1x$). It is easy to verify that for any $x$, we have $K_H(x) \le K_F(x) + 1$ and $K_H(x) \le K_G(x) + 1$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:solomonov-kolmogorov}]
+    We will number all programs with natural numbers (the number of programs is countable). Let $F_N$ be the program with number $N$ (for Turing machines, $N$ is called the \emph{Gödel number}). Consider the function $U(\langle N, x\rangle) = F_N(x)$, where the pair $\langle N, x\rangle$ is encoded as $\underbrace{11\dots1}_{N}0x$. Then
+    \[
+    K_U(x) \le K_{F_N}(x) + N + 1.
+    \]
+    (For Turing machines, $U$ is the universal Turing machine.)
+\end{proof}
+
+\begin{definition}
+    We will call $K(x) = K_U(x)$ the \emph{Kolmogorov complexity of $x$}.
+\end{definition}
+
+\begin{lemma} Kolmogorov complexity has the following properties.
+    \begin{enumerate}
+        \item There exists a constant $c$ such that for all $x$, $K(x) \le |x| + c$.
+        \item There exists a constant $c$ such that for all $x$, $K(xx) \le |x| + c$.
+        \item For any optimal $F_1$ and $F_2$, it holds that $F_1 \prec F_2$ and $F_2 \prec F_1$, i.e., there exists a constant $c$ such that
+        \(
+        |K_{F_1} - K_{F_2}| \le c.
+        \)
+    \end{enumerate}
+\end{lemma}
+
+\begin{proof} The third property follows from the definition. We will prove the first two.
+    \begin{enumerate}
+        \item Consider $H(x) = x$. Then
+        \(K(x) \le K_H(x) + c = |x| + c\).
+        \item Consider $H(p) = pp$. Then
+        \(K(xx) \le K_H(xx) + c = |x| + c\).    \qedhere
+    \end{enumerate}
+\end{proof}
+
+The question is: can there be a length $n$ such that for all $x \in \{0,1\}^n$, $K(x) < n$?
+\begin{statement}
+    For any $n$, there exists $x \in \{0,1\}^n$ such that $K(x) \ge n$ (i.e., $x$ is incompressible).
+\end{statement}
+\begin{proof}
+    There are $2^n$ words of length $n$. The number of words with complexity less than $n$ is no more than the number of programs of length less than $n$:
+    \(
+    1 + 2 + \dotsb + 2^{n-1} = 2^n - 1 < 2^n.
+    \)\qedhere
+\end{proof}
+
+\begin{statement}
+    There exists a constant $c > 0$ such that for $99\%$ of words of length $n$:
+    \[
+    n - c \le K(x) \le n + c = |x| + c.
+    \]
+\end{statement}
+\begin{proof}
+    The second inequality has already been proven. The first inequality follows from the fact that the number of programs of length at most $n - c$ is at most $1 + 2 + \dotsb + 2^{n-c} \le 2^{n - c + 1}$, which means that the proportion of words with such complexity cannot exceed $2^{-c + 1}$. For $c = 11$, this proportion is less than $0.1\%$.
+\end{proof}
+
+\begin{statement}
+    There does not exist a computable function $f:\bitstr\to\bitstr$ that is
+    defined everywhere and satisfies $f(\bar n) = x_n$, where $K(x_n) \ge n$ ($\bar n$ denotes the binary representation of the number $n$).
+\end{statement}
+\begin{proof} On one hand, the complexity $K(x_n)$ is large, while on the other hand, we can describe $x_n$ using $\log n$ bits.
+    \[
+    n \le K(x_n) \le K_f(x_n) + O(1) \le \log n + O(1). \qedhere
+    \]
+\end{proof}
+
+\begin{remark}
+    This statement can be strengthened by replacing "defined everywhere" with "defined for an infinite number of inputs." The proof remains the same.
+\end{remark}
+
+\begin{corollary}
+    The mapping $x \to K(x)$ is not computable.
+\end{corollary}
+
+\begin{remark}
+    There is a fairly simple proof of this fact based on Berry's paradox. This paradox consists of proposing to consider
+    \begin{center}
+        the smallest natural number that cannot be defined\\ by a phrase of no more than fourteen Russian words.
+    \end{center}
+    This phrase contains fourteen words and defines that very smallest number, leading to a contradiction. Similarly, assuming that such a mapping is computable, we can describe the first line $x$ for which $K(x) \ge n$ using $\log n$ bits.
+\end{remark}
+
+\begin{corollary}
+    The optimal description method is not a function that is defined everywhere.
+\end{corollary}
+
+\begin{corollary}
+    Let there be some formal theory such that we can write `$K(x) > c$'. For all sufficiently large $c$ and for all $x$, the formulas `$K(x) > c$' are unprovable (and almost all of these statements are true).
+\end{corollary}
+
+\begin{proof}
+    If for any $c$, there exists an $x$ such that `$K(x) > c$' is provable, then by enumerating all proofs, we can construct $x$ based on $c$.
+\end{proof}
+
+\begin{corollary}
+    The First Incompleteness Theorem of Gödel.
+\end{corollary}
+
+\begin{remark}
+    This, among other things, provides a way to generate unprovable statements with good probability.
+\end{remark}
+
+\begin{statement}\label{st:kologorov:entropy}
+    Let $x = \langle{011010010\dotso 10110}\rangle$ of length $n$ contain $p \cdot n$ ones and $(1-p) \cdot n$ zeros, then
+    \[
+    K(x) \le \left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n).
+    \]
+\end{statement}
+
+\begin{proof}
+    Consider the following description:
+    \begin{center}
+        $\langle$number of '1's, number of '0's, index of the permutation with the given number of '1's and '0's$\rangle$.
+    \end{center}
+    The total number of permutations is
+    \[
+    \binom{n}{pn} = 2^{\left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n)}.
+    \]
+    Thus, $K(x) \le \left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n) = H(p) \cdot n + O(\log n)$.
+\end{proof}
+
+\begin{remark}
+    In the proof, it is important to encode this triplet in such a way that it can be uniquely split into three parts. For example, one could double all the bits of the first components and add a separator '01'.
+\end{remark}
+
+\subsection{Conditional Kolmogorov Complexity}
+\begin{definition} The complexity of the \emph{conditional description} of $x$ given $y$ relative to $F$ is:
+    \[K_F(x \mid y) = \min\{|p| : F(p,y) = x\}.\]
+\end{definition}
+
+\begin{definition} A conditional description $F$ is \emph{not worse} than a conditional description $G$, denoted $F \prec G$, if there exists a constant $c$ such that for any $x$ and $y$,
+    \[
+    K_F(x \mid y) \le K_G(x \mid y) + c.
+    \]
+\end{definition}
+
+\begin{theorem}
+    There exists an optimal method for conditional descriptions $F$ such that for any other method of conditional description $G$, it holds that $F \prec G$.
+\end{theorem}
+
+\begin{definition}
+    The complexity of the optimal description of $x$ given $y$ relative to the optimal method of conditional description is called the \emph{conditional Kolmogorov complexity of $x$ given $y$}, denoted $K(x \mid y)$.
+\end{definition}
+
+\begin{statement}
+    Conditional Kolmogorov complexity has the following properties.
+    \begin{enumerate}
+        \item $K(x \mid y) \le K(x) + O(1)$.
+        \item $K(x \mid y) \le |x| + O(1)$.
+        \item There exists a constant $c$ such that for all $n$, for all $y$, for $99\%$ of words $x$ of length $n$, the following holds: \(|K(x \mid y) - n| \le c\).
+        \item $K(x \mid x) = O(1)$.
+        \item Let $f$ be a computable function. Then there exists a constant $c_f$ such that for all $x$, $K(f(x) \mid x) \le c_f$.
+    \end{enumerate}
+\end{statement}
+
+\subsection{Complexity of a Pair}
+We denote the complexity of a pair by $K(x,y) = K(\langle x,y\rangle)$, where $\langle\cdot,\cdot\rangle$ is an arbitrary computable encoding of pairs.
+
+\begin{statement}
+    The following statement is \emph{false}:
+    \[
+    \exists c\ \forall x,y\ K(x,y) \le K(x) + K(y \mid x) + c.
+    \]
+\end{statement}
+
+\begin{proof}
+    We will prove by contradiction. Let $|x| + |y| = n$. Then
+    \[
+    K(x,y) \le K(x) + K(y \mid x) + c \le |x| + |y| + 2 \cdot O(1) + c = n + O(1).
+    \]
+    On one hand, the number of distinct pairs is $(n+1) \cdot 2^n$. On the other hand, from the complexity estimate, the number of distinct descriptions of pairs cannot exceed $2^{n + O(1)}$.
+\end{proof}
+
+\begin{theorem}
+    \(
+    \forall x,y\ K(x,y) \le K(x) + K(y \mid x) + O(\log K(x,y)).
+    \)
+\end{theorem}
+
+\begin{proof}
+    Consider the following encoding method for pairs: $\langle \overline{\overline{|p|}}01pq\rangle$, where $\overline{\overline{|p|}}$ is the binary representation of $|p|$, in which each bit is doubled.
+\end{proof}
+
+\begin{theorem}[Kolmogorov-Levin]\label{thm:kolmogorov-levin}
+    $K(x,y) = K(x) + K(y \mid x) + O(\log K(x,y))$.
+\end{theorem}
+
+\begin{definition}
+    \emph{Mutual information of $x$ and $y$:}
+    \[
+    I(x:y) = K(y) - K(y \mid x),
+    \]
+    \[
+    I(y:x) = K(x) - K(x \mid y).
+    \]
+\end{definition}
+
+Thus, the Kolmogorov-Levin theorem is a theorem about the symmetry of mutual information.
+\[
+I(x:y) = K(x) + K(y) - K(x,y) + O(\log K(x,y)) = I(y:x).
+\]
+
+\begin{proof}[Proof of Theorem~\ref{thm:kolmogorov-levin}]
+    The inequality `$\le$' has already been proven. It remains to prove `$\ge$'.
+    \[
+    \underbrace{K(x)}_{m} + \underbrace{K(y \mid x)}_l \le \underbrace{K(x,y)}_n + \underbrace{O(\log K(x,y))}_{O(\log n)}.
+    \]
+    Let $S = \{(a,b) \mid K(a,b) \le n\}$. Note that $(x,y) \in S$ and $|S| \le 2^{n+1}$.
+    Consider $S_x = \{(x,b) \mid (x,b) \in S\}$.
+    By definition, $(x,y) \in S_x$.
+    We will show that
+    \[
+    l = K(y \mid x) \le \log |S_x| + O(\log n).
+    \]
+    We will enumerate the set $S$. During this enumeration, we will obtain points from $S_x$. To specify $y$, we need to indicate the index of $(x,y)$ in this enumeration. Additionally, to start such an enumeration, we need to know the number $n$. Thus,
+    \[|S_x| \ge 2^{l - c \cdot \log n} \ge 2^{l'},\]
+    where $l'$ is the nearest integer less than or equal to $l$, i.e., $l' = \lfloor l - c \cdot \log n \rfloor$.
+
+    Let us look again at the enumeration of $S$. During the enumeration, we encounter "heavy sections"—those in which the number of elements is at least $2^{l'}$. To specify the section $S_x$, we need to indicate its ordinal number in the enumeration of $S$ among all "heavy sections". Thus,
+    \[
+    m = K(x) \le \log(\text{\# heavy sections}) + O(\log n) + O(\log l').
+    \]
+    The number of heavy sections is at most $|S|/2^{l'}$.
+    \[
+    m = K(x) \le \log \frac{|S|}{2^{l'}} + O(\log n) = n - l + O(\log n).
+    \]
+    Thus, we obtain the statement of the theorem: $m + l \le n + O(\log n)$.
+\end{proof}
+
+\begin{corollary}
+    $|I(x:y) - I(y:x)| \le O(\log K(x,y))$.
+\end{corollary}
+
+\begin{remark}
+    Choose $n$ such that its binary representation is incompressible, i.e., $K(\bar n) = \log n + O(1)$. Take $x \in \{0,1\}^n$ such that $K(x \mid \bar n) = n + O(1)$. Then
+    \begin{itemize}
+        \item\(
+        I(\bar n : x) = K(x) - K(x \mid \bar n) = n + O(1) - (n + O(1)) = O(1),
+        \)
+        \item\(
+        I(x : \bar n) = K(\bar n) - K(\bar n \mid x) = (\log n + O(1)) - O(1) = \log n + O(1).
+        \)
+    \end{itemize}
+    Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin theorem.
+\end{remark}
+
+\begin{exercise}
+    $2K(x,y,z) \le K(x,y) + K(x,z) + K(y,z) + O(\log n)$, with $n = |x| + |y| + |z|$.
+\end{exercise}
+
+\begin{exercise}
+    $K(x,y,z) + K(z) \le K(x,z) + K(y,z) + O(\log n)$, with $n = |x| + |y| + |z|$.
+\end{exercise}
+
+\begin{exercise}
+    $K(z) \le K(z \mid x) + K(z \mid y) + I(x:y) + O(\log n)$, with $n = |x| + |y| + |z|$.
+\end{exercise}
+
+
+\subsection{Method of Incompressible Objects}
+\begin{definition}
+    \emph{Finite automaton with multiple heads} is a finite automaton where at each step the transition function, based on the internal state of the automaton and the symbols under the heads, returns the next state and the indices of the heads to be moved, with at least one head moving at each step.
+\end{definition}
+
+We define the class $\mathcal{L}_k$ as the class of languages recognized by finite automata with $k$ heads.
+
+\begin{theorem}\label{thm:kDFA}
+    $\mathcal{L}_k \subsetneq \mathcal{L}_{k+1}$.
+\end{theorem}
+
+We define the following family of languages over the alphabet $\{0,1,\#\}$
+\[
+A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
+\]
+where $w_i \in \bitstr$, for all $i \in \{1,2,\dotsc,n\}$.
+
+For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads (by the pumping lemma, a finite automaton with one head cannot recognize this language).
+
+For $n = 3$, it can be recognized with four heads:
+\[
+\underset{\fbox{1}}{w_1}\#w_2\#w_3\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_2}\#\underset{\fbox{4}}{w_1}.
+\]
+But it can also be done with three heads (can you find a trick?):
+\[
+\underset{\fbox{1}}{w_1}\#\underset{\fbox{2}}{w_2}\#w_3\#w_3\#\underset{\fbox{3}}{w_2}\#w_1.
+\]
+
+If this trick is used for $k$ heads, then one could recognize the language $A_n$ for $n \le (k-1) + (k-2) + \dotsb + 1$, i.e., $n = \frac{k \cdot (k-1)}{2}$. Thus, a finite automaton with $k$ heads recognizes the language $A_n$ for $n \le \frac{k \cdot (k-1)}{2}$.
+
+\begin{lemma}
+    $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+\end{lemma}
+
+\begin{proof}
+    We say that a pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step in the operation of the finite automaton when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.
+
+    For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. If $n > k \cdot (k-1)/2$, then there will be a block that is not inspected by any pair of heads. Let us consider some $x \in A_n$ and assume that the block $w_\ell$ is not inspected.
+
+    \begin{remark}
+        The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.
+    \end{remark}
+
+    We will write the \emph{protocol of the automaton's operation on the word $x$ with the highlighted $\ell$}. We will record the state of the automaton each time the following events occur:
+    \begin{itemize}
+        \item entry of a head into the copy of $w_\ell$,
+        \item exit of a head from the copy of $w_\ell$.
+    \end{itemize}
+    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+
+    Suppose that for a specific $x$
+    \[
+    x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
+    \]
+    the finite automaton does not inspect the block $\ell$. Consider the input $x'$ with a different block $w'_\ell$:
+    \[
+    x' = w_1\#w_2\#\dotsb\#w'_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
+    \]
+
+    \begin{statement}
+        It is impossible for block $\ell$ to also not be inspected for $x'$ while the protocols are equal, i.e., $\pi(x,\ell) = \pi(x',\ell)$.
+    \end{statement}
+
+    \begin{proof}
+        If the protocols are equal, then the automaton must also accept the input
+        \[
+        x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
+        \]
+        If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.
+    \end{proof}
+
+    We have shown that for different $x$ we must have different protocols. Thus, knowing $\ell$ and the protocol, we can recover $w_\ell$—to do this, we need to know all other blocks and the protocol.
+
+    Our observation can be rewritten as follows:
+    \[
+    K(w_\ell \mid w_1,\dots,w_{\ell-1},w_{\ell+1},\dotsc,w_n,\ell,\pi(x,\ell)) = O(1).
+    \]
+    We assume that all blocks have length $N$. Furthermore, we require that $x$ is incompressible, i.e., $K(x) = K(w_1,w_2,\dotsc,w_n) \ge n \cdot N$.
+    Then,
+    \[
+    n \cdot N \le K(w_1,\dotsc,w_n) \le
+    \underbrace{(n-1) \cdot N}_{\{w_i\}_{i \neq \ell}} +
+    \underbrace{O(\log n)}_{\ell} +
+    \underbrace{4 \cdot k \cdot O(k \log n N)}_{\text{complexity}\ \pi(x,\ell)}.
+    \]
+    As $N \to \infty$, we obtain a contradiction: $n \cdot N \le (n-1)N + O(k^2 \log n N)$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:kDFA}]
+    The language $A_{\frac{k \cdot (k + 1)}{2}}$ lies in $\mathcal{L}_{k+1}$ but does not lie in $\mathcal{L}_k$.
+\end{proof}
+
+\subsection{Method of Incompressible Objects}
+\begin{definition}
+    \emph{Finite automaton with multiple heads} is a finite automaton where at each step the transition function, based on the internal state of the automaton and the symbols under the heads, returns the next state and the indices of the heads to be moved, with at least one head moving at each step.
+\end{definition}
+
+We define the class $\mathcal{L}_k$ as the class of languages recognized by finite automata with $k$ heads.
+
+\begin{theorem}\label{thm:kDFA}
+    $\mathcal{L}_k \subsetneq \mathcal{L}_{k+1}$.
+\end{theorem}
+
+We define the following family of languages over the alphabet $\{0,1,\#\}$
+\[
+A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
+\]
+where $w_i \in \bitstr$, for all $i \in \{1,2,\dotsc,n\}$.
+
+For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads (by the pumping lemma, a finite automaton with one head cannot recognize this language).
+
+For $n = 3$, it can be recognized with four heads:
+\[
+\underset{\fbox{1}}{w_1}\#w_2\#w_3\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_2}\#\underset{\fbox{4}}{w_1}.
+\]
+But it can also be done with three heads (can you find a trick?):
+\[
+\underset{\fbox{1}}{w_1}\#\underset{\fbox{2}}{w_2}\#w_3\#w_3\#\underset{\fbox{3}}{w_2}\#w_1.
+\]
+
+If this trick is used for $k$ heads, then one could recognize the language $A_n$ for $n \le (k-1) + (k-2) + \dotsb + 1$, i.e., $n = \frac{k \cdot (k-1)}{2}$. Thus, a finite automaton with $k$ heads recognizes the language $A_n$ for $n \le \frac{k \cdot (k-1)}{2}$.
+
+\begin{lemma}
+    $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+\end{lemma}
+
+\begin{proof}
+    We say that a pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step in the operation of the finite automaton when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.
+
+    For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. If $n > k \cdot (k-1)/2$, then there will be a block that is not inspected by any pair of heads. Let us consider some $x \in A_n$ and assume that the block $w_\ell$ is not inspected.
+
+    \begin{remark}
+        The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.
+    \end{remark}
+
+    We will write the \emph{protocol of the automaton's operation on the word $x$ with the highlighted $\ell$}. We will record the state of the automaton each time the following events occur:
+    \begin{itemize}
+        \item entry of a head into the copy of $w_\ell$,
+        \item exit of a head from the copy of $w_\ell$.
+    \end{itemize}
+    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+
+    Suppose that for a specific $x$
+    \[
+    x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
+    \]
+    the finite automaton does not inspect the block $\ell$. Consider the input $x'$ with a different block $w'_\ell$:
+    \[
+    x' = w_1\#w_2\#\dotsb\#w'_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
+    \]
+
+    \begin{statement}
+        It is impossible for block $\ell$ to also not be inspected for $x'$ while the protocols are equal, i.e., $\pi(x,\ell) = \pi(x',\ell)$.
+    \end{statement}
+
+    \begin{proof}
+        If the protocols are equal, then the automaton must also accept the input
+        \[
+        x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
+        \]
+        If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.
+    \end{proof}
+
+    We have shown that for different $x$ we must have different protocols. Thus, knowing $\ell$ and the protocol, we can recover $w_\ell$—to do this, we need to know all other blocks and the protocol.
+
+    Our observation can be rewritten as follows:
+    \[
+    K(w_\ell \mid w_1,\dots,w_{\ell-1},w_{\ell+1},\dotsc,w_n,\ell,\pi(x,\ell)) = O(1).
+    \]
+    We assume that all blocks have length $N$. Furthermore, we require that $x$ is incompressible, i.e., $K(x) = K(w_1,w_2,\dotsc,w_n) \ge n \cdot N$.
+    Then,
+    \[
+    n \cdot N \le K(w_1,\dotsc,w_n) \le
+    \underbrace{(n-1) \cdot N}_{\{w_i\}_{i \neq \ell}} +
+    \underbrace{O(\log n)}_{\ell} +
+    \underbrace{4 \cdot k \cdot O(k \log n N)}_{\text{complexity}\ \pi(x,\ell)}.
+    \]
+    As $N \to \infty$, we obtain a contradiction: $n \cdot N \le (n-1)N + O(k^2 \log n N)$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:kDFA}]
+    The language $A_{\frac{k \cdot (k + 1)}{2}}$ lies in $\mathcal{L}_{k+1}$ but does not lie in $\mathcal{L}_k$.
+\end{proof}
+
+\subsection{Definition of Randomness}
+When speaking about finite sequences, it is quite unclear how to draw the line between random and non-random sequences. Let us attempt to give a formal definition of a random infinite sequence in the language of Kolmogorov complexity. What properties do we want from this definition?
+
+Consider the sequence $\bar{x} = x_1 x_2 x_3 \dotso x_n \dotso$. A natural definition would be of the form $\forall n \, K(x_1 x_2 x_3 \dotso x_n) \ge n - c$. We will show that for the usual definition of Kolmogorov complexity, such a definition does not make sense.
+
+\begin{statement}
+    For any sequence $\bar{x} = x_1 x_2 x_3 \dotso x_n \dotso$, there exists an $n$ such that
+    \[
+    K(x_1, \dotsc, x_n) \le n - \log n + O(1).
+    \]
+    (i.e., for any $c$, there exists a prefix such that $K(x_1, \dotsc, x_n) \le n - c$).
+\end{statement}
+\begin{proof}
+    Take some prefix of length $k$ and interpret it as the binary representation of some number $m$ (adding a leading one), and consider its continuation of length $m$:
+    \[
+    \underbrace{1 x_1 x_2 x_3 \dotso x_k}_{\overline{m}}
+    \underbrace{x_{k+1} \dotso x_{k + m}}_y,
+    \]
+    where $|y| = m$. Let $n = m + k$. Then it is claimed that
+    \[
+    K(x_1 \dotso x_{m+k}) \le K(y) + O(1) \le m + O(1) \le n - k + O(1) \le n - \log n + O(1).
+    \]
+    Indeed, knowing the string $y$, one can determine $m = |y|$ and prepend $\overline{m}$ to the beginning without the leading one.
+\end{proof}
+
+\begin{definition}
+    \emph{Prefix complexity of $x$ relative to $F$}:
+    \[
+    KP_F(x) = \min \{|p| : F(p) = x\},
+    \]
+    where $F$ is a function with a (non)prefix domain of definition, i.e., if $F(p_1)$ and $F(p_2)$ are defined, then $p_1 \not\sqsubset p_2$.
+\end{definition}
+\begin{definition}
+    A non-prefix method of describing $F$ is \emph{not worse} than a non-prefix method of describing $G$, denoted $F \prec G$, if $\exists c \, \forall x \, KP_F(x) \le KP_G(x) + c$.
+\end{definition}
+\begin{theorem}
+    There exists an optimal method of non-prefix description.
+\end{theorem}
+\begin{proof}
+    The problem is that not all programs have a non-prefix domain of definition. One can transform any program $\pi_i$ into a program with a non-prefix domain of definition $\pi'_i$ such that
+    \begin{itemize}
+        \item if $\pi_i$ computes a function $F_i$ with a non-prefix domain of definition, then $\pi'_i$ also computes $F_i$,
+        \item if $\pi_i$ computes something else, then $\pi'_i$ computes some function with a non-prefix domain of definition (the domain can be empty).
+    \end{itemize}
+    After this, we will use a construction similar to that in Theorem~\ref{thm:solomonov-kolmogorov} (Solomonov-Kolmogorov):
+    $UP(\underbrace{11\dotso 1}_n 0p) = \pi_n'(p)$.
+
+    We define the operation of program $\pi_n'$: on input $p$, program $\pi_n'$ runs program $\pi_n$ in parallel on all inputs:
+    \[\pi_n(0), \pi_n(1), \pi_n(00), \pi_n(01), \dotsc, \pi_n(p), \dotsc\]
+    If at any point it is discovered that $\pi_n$ has a non-prefix domain of definition, then $\pi'(p)$ enters a loop. If at any point $\pi(p)$ halts and no violation of non-prefixity has been detected, then $\pi'(p) = \pi(p)$.
+\end{proof}
+\begin{definition}
+    $KP(x) = KP_{UP}(x)$, the prefix complexity relative to $UP$, is called \emph{prefix Kolmogorov complexity of $x$}.
+\end{definition}
+\begin{exercise}
+    $KP(x,y) \le KP(x) + KP(y) + O(1)$.
+\end{exercise}
+
+\begin{definition}
+    A sequence $\bar{x} = x_1 x_2 \dotso x_n \dotso$ is called \emph{Martin-Löf random} if $\exists c \, \forall n \, KP(x_1 \dotso x_n) \ge n - c$.
+\end{definition}
+
+\begin{statement}
+    The prefix Kolmogorov complexity has the following properties:
+    \begin{itemize}
+        \item $KP(x) \le K(x) + 2\log K(x) + O(1)$.
+        \item $\sum_{x \in \{0,1\}^k} 2^{-KP(x)} \le 1$.
+    \end{itemize}
+\end{statement}
+\begin{proof}\mbox{}
+    \begin{itemize}
+        \item The term $2\log K(x)$ arises from the transformation of the string $p$ into a non-prefix string $p' = \overline{\overline{|p|}}01p$.
+        \item Similarly to the Kraft-MacMillan inequality for prefix codes.
+    \end{itemize}
+\end{proof}
+
+\begin{theorem}
+    Almost all sequences $\bar{x} = x_1 x_2 \dotso x_n \dotso$ are Martin-Löf random, i.e., non-random sequences have measure 0 according to Bernoulli measure.
+\end{theorem}
+\begin{proof}
+    We construct a covering set
+    \[
+    A_c = \bigcup_{KP(x_1 \dotso x_n) \le n - c} \Omega_{x_1 \dotso x_n},
+    \]
+    where $\Omega_p = \{\text{all sequences continuing $p$}\}$. $A_c$ covers all non-random Martin-Löf sequences. Indeed, any non-random sequence has a prefix that determines such $\Omega_p$. What is the measure of $A_c$?
+    \begin{multline*}
+        \mu(A_c) \le
+        \sum_{KP(x_1 \dotso x_n) \le n - c} 2^{-n} \le
+        \sum_{KP(x_1 \dotso x_n) \le n - c} 2^{-KP(x_1 \dotso x_n) - c} \le\\
+        \le \sum_{x_1 \dotso x_n} 2^{-KP(x_1 \dotso x_n) - c} =
+        2^{-c} \cdot \sum_{x_1 \dotso x_n} 2^{-KP(x_1 \dotso x_n)} \le 2^{-c}.
+    \end{multline*}
+    Thus, for any $\varepsilon$, we can present a covering of non-random Martin-Löf sequences by a countable number of cones.
+\end{proof}
+\begin{statement}
+    The following properties hold for Martin-Löf random sequences:
+    \begin{itemize}
+        \item Every Martin-Löf random sequence is non-computable.
+        \item If $\bar{x}$ is Martin-Löf random, then
+        \[
+        \lim_{n\to\infty} \frac{\text{number of ones}}{n} = \frac{1}{2}.
+        \]
+    \end{itemize}
+\end{statement}
+\begin{proof}\mbox{}
+    \begin{itemize}
+        \item If $\bar{x}$ is computable, then
+        \[
+        KP(x_1 \dotso x_n) \le K(x_1 \dotso x_n) + 2\log K(x_1 \dotso x_n) \le \log n + 2 \log \log n + O(1).
+        \]
+        \item The estimate $K(x_1 \dots x_n) \le H(p) \cdot n + O(\log n)$ is used from statement~\ref{st:kologorov:entropy}.
+    \end{itemize}
+\end{proof}
+
+\begin{exercise}
+    Prove that the following sequences are not Martin-Löf random:
+    \begin{itemize}
+        \item $x_1 0 x_3 0 x_5 \dotso x_{2n+1} 0 x_{2n+3} \dotso$,
+        \item $x_1 x_1 x_2 x_2 x_3 x_3 \dotso x_n x_n \dotso$.
+    \end{itemize}
+\end{exercise}
+
+\begin{theorem}[Law of Large Numbers in Hardy-Littlewood Form]
+    For almost all sequences $\bar{x} = x_1 x_2 \dotso x_n \dotso$ (with probability 1)
+    \[
+    \left|\frac{x_1 + x_2 + \dotsb + x_n}{n} - \frac{1}{2}\right| =
+    O\left(\sqrt{\frac{\ln n}{n}}\right).
+    \]
+\end{theorem}
+\begin{proof}
+    Let there be a total of $p_n \cdot n$ ones and $(1 - p_n) \cdot n$ zeros in $x_1 \dotso x_n$.
+    \[
+    KP(x_1 \dotso x_n) \le K(x_1 \dotso x_n) + O(\log n) \le
+    H(p) \cdot n + O(\log n).
+    \]
+    Let $p = \frac{1}{2} + \delta_n$. We expand $H(p)$ in a series around $\frac{1}{2}$:
+    \[
+    H(1/2 + \delta_n) \cdot n = (1 - c_H \cdot \delta_n^2 + o(\delta_n^2)) \cdot n
+    \le (1 - c'_H \cdot \delta_n^2) \cdot n.
+    \]
+    Thus, for the random sequence (i.e., with probability 1):
+    \[
+    n - c \le KP(x_1 \dotso x_n) \le n - c'_H \cdot \delta_n^2 \cdot n + O(\log n).
+    \]
+    We obtain that $\delta_n^2 \le O\left(\frac{\log n}{n}\right)$.
+\end{proof}
+\begin{remark}
+    A stronger law of large numbers has the estimate
+    $(1+\varepsilon)\sqrt{\frac{2 \log \log n}{n}}$.
+\end{remark}
+
+\section{Applications of Kolmogorov Complexity}
+
+\subsection{Infinity of the Set of Prime Numbers}
+\begin{theorem}
+    There are infinitely many prime numbers.
+\end{theorem}
+\begin{proof}
+    We prove by contradiction. Suppose there are only $m$ prime numbers: $\seqn{p}{m}$. Then any integer can be expressed as a product of powers of these primes:
+    \[
+    x = p_1^{k_1}\cdot p_2^{k_2}\cdot\dotsm\cdot p_m^{k_m},
+    \]
+    which defines the set of powers $\seqn{k}{m}$. Each $k_i \le \log x$, meaning it can be represented using $O(\log \log x)$ bits. The number $m$ is an absolute constant, so any $x$ can be represented with $O(\log \log x)$ bits. Meanwhile, there exist random $n$-bit numbers $x$ with complexity at least $n$. This leads to a contradiction:
+    \[ n \le K(x) \le O(\log \log x) = O(\log n).\]
+\end{proof}
+
+\subsection{Information Transfer on a Tape}
+We will prove that copying a word of length $n$ on a single-tape Turing machine requires $\Omega(n^2)$ steps. To do this, let us consider a more general problem—the problem of transferring information across the tape. Suppose a certain "buffer" area of width $b$ is allocated on the tape.
+\begin{center}
+    \begin{tikzpicture}
+        \node[minimum width=2cm,fill=gray!30] (l) at (0,0) {$L$};
+        \node[minimum width=2cm, right of=l, node distance=4cm, fill=gray!30] (r) {$R$};
+
+        \draw[draw] (l.south west) -- (r.south east);
+        \draw[draw] (l.north west) -- (r.north east);
+
+        \draw[draw] (r.north west) -- ($ (r.south west)+(0,-.6) $);
+        \draw[draw] (l.north east) -- ($ (l.south east)+(0,-.6) $);
+
+        \draw[draw,<->] ($ (r.south west)+(0,-.3) $) -- ($ (l.south east)+(0,-.3) $);
+
+        \node at ($ (l.south east)+(1,-.6) $) {$b$};
+    \end{tikzpicture}
+\end{center}
+We will be interested in the speed of information transfer through the "buffer zone" from left to right, i.e., from area $L$ to area $R$. Suppose initially area $R$ is empty. What can be the complexity of string $R$ after $t$ steps from the start of operation? We will show that the complexity of $R$ does not exceed $(t\log m)/b + O(\log t)$, where $m$ is the number of states of the Turing machine. This can be explained informally: each state "carries" no more than $\log m$ bits of information, and in one step, information is transferred to one cell, so after $t$ steps, we will have transferred no more than $t\log m$ bits of information. We need to transfer information over a distance of $b$, which gives us $(t\log m) / b$.
+
+\begin{theorem}
+    Let a Turing machine with $m$ states be fixed. Then there exists a constant $c$ such that for any $b$ and for any computation with a buffer zone of $b$ (initially this zone and the tape to the right of it are empty, and the machine's head is to the left of the zone), the complexity of the right part of the tape $R(t)$ after $t$ steps of computation does not exceed
+    $$\frac{t\log m}{b} + 4\log t + c.$$
+\end{theorem}
+\begin{proof}
+    We will draw a boundary somewhere within the buffer zone, and each time the Turing machine's head crosses the boundary from left to right, we will record in which state it crossed it. We will call such a work protocol the \emph{trace} of the machine. Note that the trace can be used to reconstruct the operation of the machine to the right of the boundary—indeed, the behavior of the Turing machine to the right of the boundary depends only on the state in which the machine crossed the boundary and on what has already been written on the tape to the right of the boundary.
+
+    To reconstruct $R(t)$, we need to specify the trace $S$, the number of steps $t' \le t$ that the Turing machine took to the right of the boundary, and the distance $b' < b$ from the boundary to $R$. We get
+    $$
+    K(R(t)) \le |\langle S, b', t'\rangle| + c
+    \le |S|\cdot\log m + 2\log b + 2\log t + c
+    \le |S|\cdot\log m + 4\log t + c.
+    $$
+    This inequality holds for any initial state and position of the boundary. If for the given $L$ we choose the \emph{shortest} trace for all possible boundary positions, then its length is guaranteed to be less than $t/b$ (there are $b + 1$ different boundary positions, and at each step only one of the possible boundaries is crossed, so the total length of the traces does not exceed $t$). Therefore, our estimate is valid for $|S| < t/b$.
+\end{proof}
+
+From this, we immediately obtain a quadratic lower bound for copying on a single-tape Turing machine. By copying, we mean the following process: initially, the tape contains some word $x \in \bitstr$, and to its right, the tape is empty. At the end of the Turing machine's operation, the tape should contain $xx$.
+
+\begin{theorem}
+    There exists a constant $\epsilon > 0$ such that for any $n$, there exists a word of length $n$ whose copying by machine $M$ takes at least $\epsilon n^2$ steps.
+\end{theorem}
+\begin{proof}
+    For simplicity, let us assume that $n$ is even. Let $x$ be a word whose second half $u$ is incompressible (i.e., has complexity $\ge n/2$). We apply the theorem on the speed of information transfer, considering a buffer zone of length $n/2$ to the right of $x$.
+    \begin{center}
+        \begin{tikzpicture}[node distance=2cm]
+            \node[minimum width=2cm,minimum height=.5cm,fill=gray!30] (a) at (0,0) {};
+            \node[minimum width=2cm,minimum height=.5cm,right of=a, fill=gray!30] (b) {$u$};
+            \node[minimum width=2cm,minimum height=.5cm,right of=b] (c)  {};
+            \node[minimum width=2cm,minimum height=.5cm,right of=c] (d)  {$u$};
+
+            \draw[draw] (a.south west) -- (d.south east);
+            \draw[draw] (a.north west) -- (d.north east);
+
+            \foreach \n in {a,d} {
+                \draw[draw] (\n.north east) -- (\n.south east); }
+
+            \foreach \n in {a,c,d} {
+                \draw[draw] (\n.north west) -- ($ (\n.south west)+(0,-.6) $); }
+
+            \draw[draw,<->] ($ (a.south west)+(0,-.3) $) -- ($ (b.south east)+(0,-.3) $);
+            \draw[draw,<->] ($ (c.south west)+(0,-.3) $) -- ($ (c.south east)+(0,-.3) $);
+
+            \node at ($ (a.north east)+(0,.3) $) {\small $x$};
+            \node at ($ (a.south east)+(0,-.6) $) {\small $n$};
+            \node at ($ (c.south)+(0,-.6) $) {\small $n/2$};
+        \end{tikzpicture}
+    \end{center}
+
+    Assume the copying took $t$ steps, then the complexity of zone $R$ is at least $n/2$. On the other hand, by the previous theorem, the complexity of $R$ does not exceed $(t\log m)/b + 4\log t + c$, where $b = n/2$. Thus, we obtain that
+    \[
+    \frac{n}{2} \le \frac{t\log m}{b} + 4\log t + c.
+    \]
+    Assuming $t < n^2$ (otherwise, there is nothing to prove), we have $4\log t < 8\log n$. Hence,
+    \[
+    t \ge \frac{n^2}{4\log m} - O(n\log n).
+    \]
+    We can eliminate the second term if we choose $\epsilon$ slightly less than $1/(4\log m)$.
+\end{proof}
+
+
+\subsection{Algorithm for Adding Bit Numbers}
+Let $\bar x = \overline{x_{n-1}\dotso x_0}$ and $\bar y = \overline{y_{n-1}\dotso y_0}$ be two $n$-bit numbers. We propose an algorithm for adding $\bar x$ and $\bar y$, which performs an average of $\log n$ operations (assuming that bitwise operations on $n$-bit numbers are done in $O(1)$).
+
+The algorithm will be structured as follows.
+\begin{itemize}
+    \item First iteration.\\
+    Compute $\bar z^{(1)}$: $z_i^{(1)} = x_i \oplus y_i$.\\
+    Compute $\bar c^{(1)}$: $c_i^{(1)} = x_{i-1} \land y_{i-1}$ (carry vector).
+    \item Iteration $k+1$.\\
+    Compute $\bar z^{(k+1)}$: $z_i^{(k+1)} = z_i^{(k)} \oplus c_i^{(k)}$.\\
+    Compute $\bar c^{(k+1)}$: $c_i^{(k+1)} = z_{i-1}^{(k)} \land c_{i-1}^{(k)}$.
+\end{itemize}
+Iterations stop when $\bar c^{(k)} = 0$.
+
+Under what input can we perform $t$ iterations? It is claimed that this can only happen if $\bar x$ and $\bar y$ have continuous blocks of length $t$, where the corresponding bits are opposite, and there is a '$1$' following them.
+\begin{center}
+    \begin{tikzpicture}[node distance=1cm]
+        \tikzstyle{bigrect}=[draw, minimum width=1.5cm, minimum height=.7cm];
+        \tikzstyle{rect}=[draw, minimum width=1cm, minimum height=.7cm];
+        \node (y) at (0,0) {$\bar y:$};
+        \node (x) at (0,1) {$\bar x:$};
+        \node[rect,right of=x] (x1) {};
+        \node[rect,right of=y] (y1) {};
+        \node[right = 0mm of x1] (x2) {$b$};
+        \node[right = 0mm of y1] (y2) {$b$};
+        \node[right = 0mm of x2,bigrect] (x3) {$v_t\dotso v_1$};
+        \node[right = 0mm of y2,bigrect] (y3) {$\bar v_t\dotso\bar v_1$};
+        \node[right = 0mm of x3] (x4) {$1$};
+        \node[right = 0mm of y3] (y4) {$1$};
+        \node[right = 0mm of x4,rect]  {};
+        \node[right = 0mm of y4,rect]  {};
+        \node[below = 1mm of y4] {$j$};
+    \end{tikzpicture}
+\end{center}
+
+Since $\bar x$ and $\bar y$ have a common block of bits of length $t$, we have
+\[
+K(\bar x \mid \bar y) \le (n - t - 2) + \underbrace{\log n}_{t} + \underbrace{\log n}_{j} + O(\log\log n).
+\]
+From this, it follows that $t \le n - K(\bar x \mid \bar y) + 2\log n + O(\log\log n)$. The average number of iterations in the algorithm can be estimated as
+\[
+\sum_t t \cdot [\text{fraction of pairs $(x, y)$ with a common block of length $t$}].
+\]
+
+We introduce the notation
+$K(\bar x \mid \bar y) \le n - \underbrace{(t - 2\log n - O(\log\log n))}_{s}$ and we will call $s$ the \emph{defect of randomness}, i.e., $s = t - 2\log n + O(\log\log n)$ and $t \le s + 2\log n + O(\log\log n)$.
+
+The fraction of pairs $(\bar x, \bar y)$ such that $K(\bar x \mid \bar y) = n - s$ is no more than $2^{-s + 1}$. We are interested in an asymptotic estimate, so we can assume that
+\[
+t \le s + 2\log n + O(\log\log n) \le s + 3\log n.
+\]
+Then the average number of iterations in the algorithm is at most
+\[
+\sum_s (s + 3\log n) \cdot 2^{-s + 1} = 6\log n \sum_s 2^{-s} + 2 \sum_s \frac{s}{2^s}
+= O(\log n) + O(1).
+\]
+It is important to note that from $n - s \le n + O(1)$, we find that $-s \le O(1)$.
+
+\subsection{Lovász Local Lemma}
+Let a certain set of events $\{\seqn{A}{n}\}$ be given, and for each event, its probability is known as $\Pr[A_i] = \varepsilon_i$. What is the probability that none of these events occurs? There are two extreme cases.
+
+\begin{itemize}
+    \item If nothing is known about the nature of the events $\{A_i\}_{i=1}^n$, then
+    \[
+    \Pr[\overline{A}_1\land\overline{A}_2\land\dotsb\land\overline{A}_n]
+    \ge 1 - \varepsilon_1 - \varepsilon_2 -\dotsb -\varepsilon_n.
+    \]
+
+    \item If all $\{A_i\}_{i=1}^n$ are independent collectively, then
+    \[
+    \Pr[\overline{A}_1\land\overline{A}_2\land\dotsb\land\overline{A}_n]
+    = (1 - \varepsilon_1)\cdot(1 - \varepsilon_2) \cdot\dotso\cdot (1 - \varepsilon_n).
+    \]
+\end{itemize}
+
+The Lovász Local Lemma provides an estimate in the intermediate case where the dependence between events is \emph{local}: each $A_i$ is dependent only on a relatively small number of \emph{neighbors}. We denote by $N(i)$ the set of neighbors of event $i$.
+
+\begin{theorem}[Lovász Local Lemma] Let a set of $n$ events $\{\seqn{A}{n}\}$ be given, in which each event $A_i$ is independent of all events $A_j$, where $j \not\in N(i)$. If for each $i$, $\varepsilon_i < 1$ is chosen such that
+    \[
+    \Pr[A_i] \le \varepsilon_i \cdot \prod_{j \in N(i)} (1 - \varepsilon_j),
+    \]
+    then the probability that none of the events occur is
+    \[
+    \Pr[\overline{A}_1\land\overline{A}_2\land\dotsb\land\overline{A}_n]
+    \ge (1 - \varepsilon_1)\cdot(1 - \varepsilon_2) \cdot\dotso\cdot (1 - \varepsilon_n).
+    \]
+\end{theorem}
+\begin{proof}
+    We start with a pair of simple statements. By the definition of conditional probability,
+    \[
+    \Pr[A \mid B] = \frac{\Pr[A \land B]}{\Pr[B]} \le \frac{\Pr[A]}{\Pr[B]}.
+    \]
+    This statement can be \emph{“relativized”}, i.e., we can add an additional condition $C$ to all probabilities:
+    \begin{equation}\label{eq:lll:fact}
+        \Pr[A \mid B \land C] \le \frac{\Pr[A \mid C]}{\Pr[B \mid C]}.
+    \end{equation}
+
+    We will prove the theorem by induction. The proof of the inductive step will consist of proving two statements.
+    \begin{enumerate}
+        \item For any $i$ and a set $J = \{\seqn{j}{k}\} \subset [n]$, with $i \not\in J$:
+        \begin{equation}\label{eq:lll:ind1}
+            \Pr[A_i \mid \overline A_{j_1} \land \overline A_{j_2} \land \dotsb \land \overline A_{j_k}] \le \varepsilon_i.
+        \end{equation}
+        \item For any disjoint sets $I, J \subset [n]$, $I = \{\seqn{i}{\ell}\}$, $J = \{\seqn{j}{m}\}$:
+        \begin{equation}\label{eq:lll:ind2}
+            \Pr[\overline A_{i_1} \land \overline A_{i_2} \land \dotsb \land \overline A_{i_\ell} \mid
+            \overline A_{j_1} \land \overline A_{j_2} \land \dotsb \land \overline A_{j_m}] \ge
+            (1 - \varepsilon_{i_1}) \cdot (1 - \varepsilon_{i_2}) \cdot \dotso \cdot (1 - \varepsilon_{i_\ell}).
+        \end{equation}
+    \end{enumerate}
+    The relationship between these two statements will be formulated in the form of the following two lemmas.
+
+    \begin{lemma}\label{lm:lll:l1}
+        If inequality~\eqref{eq:lll:ind1} holds for all $k \le t$, then inequality~\eqref{eq:lll:ind2} holds for $\ell + m \le t + 1$.
+    \end{lemma}
+    \begin{proof}
+        We will expand the probability on the left side of inequality~\eqref{eq:lll:ind2}
+        using the “relativized” (i.e., with additional condition) definition of conditional probability $\Pr[A \land B \mid C] = \Pr[A \mid B \land C] \cdot \Pr[B \mid C]$
+        (this formula will need to be applied $k$ times):
+        \[
+        \begin{aligned}
+            \Pr[\overline A_{i_1} \land \overline A_{i_2} \land \dotsb \land \overline A_{i_\ell} \mid
+            \overline A_{j_1} \land \overline A_{j_2} \land \dotsb \land \overline A_{j_m}] =\,
+            &\Pr[\overline A_{i_1} \mid \overline A_{i_2} \land \dotsb \land \overline A_{i_\ell} \land
+            \overline A_{j_1} \land \dotsb \land \overline A_{j_m}]\\
+            \cdot&\Pr[\overline A_{i_2} \mid \overline A_{i_3} \land \dotsb \land \overline A_{i_\ell} \land
+            \overline A_{j_1} \land \dotsb \land \overline A_{j_m}]\\
+            &\ \vdots\\
+            \cdot&\Pr[\overline A_{i_\ell} \mid
+            \overline A_{j_1} \land \dotsb \land \overline A_{j_m}]\\
+            \ge\,&(1 - \varepsilon_{i_1}) \cdot (1 - \varepsilon_{i_2}) \cdot \dotso \cdot (1 - \varepsilon_{i_\ell}).
+        \end{aligned}
+        \]
+    \end{proof}
+
+    \begin{lemma}\label{lm:lll:l2}
+        If inequality~\eqref{eq:lll:ind2} holds for all $\ell$ and $m$ such that $\ell + m = t$, then inequality~\eqref{eq:lll:ind1} holds for $k = t$.
+    \end{lemma}
+    \begin{proof}
+        If $J \cap N(i) = \emptyset$, then inequality~\eqref{eq:lll:ind1} holds, because
+        $A_i$ is independent collectively with $\seqin{A}{i}{k}$. Otherwise, we introduce the following notations:
+        \[N = \bigwedge_{j \in J \cap N(i)} \overline A_j,\quad
+        F = \bigwedge_{j \in J \setminus N(i)} \overline A_j.
+        \]
+        In these notations, the left side of inequality~\eqref{eq:lll:ind1} can be rewritten as:
+        \[
+        \Pr[A_i \mid N \land F]
+        \le \frac{\Pr[A_i \mid F]}{\Pr[N \mid F]}
+        =   \frac{\Pr[A_i]}{\Pr[N \mid F]}
+        \le \frac{\varepsilon_i \cdot \prod_{j \in N(i)} (1 - \varepsilon_j)}
+        {\prod_{j \in J \cap N(i)} (1 - \varepsilon_j)} \le \varepsilon_i.
+        \]
+        Here, the first inequality is an application of inequality~\eqref{eq:lll:fact}; equality holds
+        because $A_i$ is independent of $F$ (i.e., $A_i$ is independent of non-neighbors of $A_i$), and the second inequality
+        follows directly from the condition of the theorem (numerator) and inequality~\eqref{eq:lll:ind2} for $\ell + m = k$ (denominator).
+    \end{proof}
+
+    Now we can describe how the induction will be structured. The base case of the induction is inequality~\eqref{eq:lll:ind1}
+    for $k = 0$ (which follows from the condition of the theorem), which is the same as inequality~\eqref{eq:lll:ind2} for
+    $\ell = 1$ and $m = 0$.
+    Now we assume that we have already proven inequalities~\eqref{eq:lll:ind1} for $k < t$ and inequality~\eqref{eq:lll:ind2} for
+    $\ell + m \le t$. We first apply lemma~\ref{lm:lll:l2} and obtain inequality~\eqref{eq:lll:ind1} for $k = t$.
+    Then, using lemma~\ref{lm:lll:l1}, we will obtain inequality~\eqref{eq:lll:ind2} for $\ell + m = t + 1$.
+
+    The proof is completed by the following observation: the local lemma of Lovász is a special case of
+    inequality~\eqref{eq:lll:ind2} for $\ell = n$ and $m = 0$.
+\end{proof}
+
+\begin{corollary}[Lovász Local Lemma for the Symmetric Case]
+    Suppose that in the condition of the Lovász Local Lemma it is additionally known that each event $A_i$
+    has a probability of at most $p$ and a number of neighbors of at most $d$.
+    Then, if \[ep(d + 1) \le 1,\] there is a positive probability that none of the events $A_i$ occurs.
+\end{corollary}
+\begin{proof}
+    By Lovász's lemma, we need to choose $\varepsilon_i$ such that
+    \[
+    \Pr[A_i] \le p \le \varepsilon_i \cdot \prod_{j \in N(i)} (1 - \varepsilon_j).
+    \]
+    Let's take the same $\varepsilon$ for all events. Then it is enough to find $\varepsilon$ satisfying the condition
+    \[
+    p \le \varepsilon \cdot (1 - \varepsilon)^d.
+    \]
+    Consider the expression $(d\varepsilon) \cdot (1 - \varepsilon)^d$. If we sum all $d + 1$ factors (brackets), the total will be $d$. Thus, we need to maximize the product given a fixed sum of factors. The maximum occurs when all factors are equal, i.e., $d\varepsilon = 1 - \varepsilon$, and consequently $\varepsilon = 1/(d + 1)$.
+    At this same value, the maximum of the original expression $\varepsilon \cdot (1 - \varepsilon)^d$ is achieved.
+    We obtain
+    \[
+    p \le \frac{1}{d + 1} \cdot \biggl(1 - \frac{1}{d + 1}\biggr)^d.
+    \]
+    It remains to note that if $(1 + \frac{1}{d})^d < e$, then $(1 - \frac{1}{d + 1})^d > 1/e$ for $d \ge 1$.
+\end{proof}
+
+\begin{exercise}
+    In each cell of a finite tape, we want to write a number from $1$ to $N$. However,
+    for each boundary between cells, some pairs of numbers $(l,r)$ are forbidden,
+    meaning that $l$ cannot be to the left of the boundary while $r$ is to the right. Prove
+    that if for each boundary the proportion of forbidden pairs among all pairs is no greater
+    than $4/27$, then the filling is possible.
+\end{exercise}
+
+\begin{exercise}
+    Prove a similar result constructively and without using the local lemma of Lovász,
+    if the set of bad pairs has measure less than $1/4$. (This shows that in this
+    problem, the local lemma of Lovász does not provide an optimal answer.)
+\end{exercise}
+
+\begin{theorem}
+    Let $\alpha < 1$ be some positive real number.
+    Suppose that for each $n$, some binary words, totaling no more than $2^{\alpha n}$,
+    are declared forbidden. Then there exists a number $N$ and an infinitely long sequence
+    of zeros and ones that does not contain forbidden substrings longer than $N$.
+\end{theorem}
+\begin{proof}
+    By compactness considerations, it is sufficient to prove the existence of arbitrarily long
+    finite sequences without forbidden substrings.
+
+    We will assume that the bits of the sequence are equally probable and independent. The occurrence
+    of a forbidden sequence of length $n$ at a given position (on a given interval $I$)
+    has a probability of $2^{(\alpha - 1)n}$, where $n$ is the length of the interval. As an estimate
+    in Lovász's lemma for this event, we take $2^{(\beta - 1)n}$ for some
+    $\beta \in (0,\alpha)$. We need to choose $\beta$ such that the condition of Lovász's lemma is satisfied.
+
+    The neighbors of the event on interval $I$ are the events on intervals $J$ that overlap
+    with $I$. Since the probabilities of events depend on the length, it is convenient to group
+    the intervals by lengths. There are $n+k-1$ intervals of length $k$ overlapping with the given interval $I$
+    of length $n$. For each of them, a factor of $(1-2^{(\beta - 1)k})$ appears on the right side of the estimate from Lovász's lemma, leading to
+    \[
+    \bigl(1-2^{(\beta - 1)k}\bigr)^{n+k-1}.
+    \]
+    Now we multiply this over all $k$ starting from some $N$. Thus,
+    for the application of Lovász's lemma, we need that
+    \[
+    2^{(\alpha - 1)n} \le 2^{(\beta - 1)n} \cdot \prod_{k \ge N}
+    \bigl(1-2^{(\beta - 1)k}\bigr)^{n+k-1}.
+    \]
+    (In this formula, the right side also accounts for the interval $I$ when $n=k$,
+    but this only decreases the right side.) We will show that a stronger inequality holds: we will roughly estimate $n+k - 1 \le nk$ (i.e., we will reduce the numbers in the product),
+    take the $n$-th root, and move $2^{\beta - 1}$ to the left.
+    \[
+    2^{(\alpha - \beta)} \le \prod_{k \ge N} \bigl(1-2^{(\beta - 1)k}\bigr)^k.
+    \]
+    We apply Bernoulli's inequality to the right side ($(1 - x)^k \ge 1 - kt$) — this will further strengthen the inequality. We obtain
+    \[
+    2^{(\alpha - \beta)} \le 1 - \sum_{k \ge N} k2^{(\beta - 1)k}.
+    \]
+    The series on the right converges for $\beta < 1$, and the left side is less than $1$
+    for $\alpha < \beta$. Thus, for $\alpha$, we can choose $\beta < \alpha$
+    and sufficiently large $N$ such that this inequality holds, which means the original weaker inequality also holds. Therefore, we can apply
+    the local lemma of Lovász for words of length at least $N$.
+
+    To obtain an infinite good word, we will construct it iteratively.
+    We start with some good word of length $1$, which has infinitely many
+    good extensions (it is easy to see that such a word exists). We will gradually add
+    one symbol at a time so that the resulting word also has infinitely many
+    good extensions (it is easy to see that at each step, at least one of the symbols will fit).
+\end{proof}
+
+\begin{exercise}[Levin's Lemma]
+    Let $\alpha < 1$ be some positive real number.
+    Then there exists an infinite sequence of zeros and ones,
+    in which all substrings of sufficiently large length $n$ have complexity
+    of at least $\alpha n$.
+\end{exercise}
+
+\begin{exercise}\label{ex:lll:rects}
+    Prove a two-dimensional analog of the previous theorem: it is possible to fill an infinite
+    grid with zeros and ones such that any rectangle of sufficiently large area is not forbidden, if for each
+    rectangle of area $k$, no more than $2^{\alpha k}$ forbidden ones are chosen,
+    where $\alpha < 1$.
+\end{exercise}
+
+Let $w=w_0w_1w_2\dotso$ be an infinite sequence. For any finite
+set $F\subset\mathbb{N}$ of indices, we denote by $w(F)$ the word composed
+of the symbols of $w$ at the positions specified by $F$ (in increasing order of indices). Consider a pair $(F, X)$,
+where $F$ is a finite set of indices, and $X$ is a word of length $|F|$. We say that
+the sequence $w$ is forbidden by the pair $(F,X)$ if $w(F) = X$. Such pairs
+are called \emph{forbiddances}, and the number of elements in $F$ is called the \emph{size of the forbiddance}. A forbiddance \emph{covers} the indices in $F$.
+
+\begin{theorem}\label{thm:lll:subseq}
+    Let $\alpha < 1$ be some positive real number and let
+    $\{(F,X)\}$ be a set of forbiddances, where for any index $i$
+    and number $n$, there are no more than $2^{\alpha n}$ forbiddances of size $n$
+    that cover $i$. Then there exists a number $N$ and a sequence
+    that is not forbidden by any forbiddance of size greater than $N$.
+\end{theorem}
+\begin{proof}
+    Similarly to the previous theorem, we will prove this statement for
+    finite sequences and then use compactness.
+
+    We apply Lovász's lemma to the violations of forbiddances.
+    The probability of violating a forbiddance of size $n$ is $2^{-n}$.
+    For a forbiddance of size $n$, we take $\varepsilon_i = 2^{-\beta n}$,
+    where $\beta$ is some constant greater than $\alpha$.
+
+    The neighbors of a forbiddance will be the forbiddances that intersect with it (covering a common index).
+    For Lovász's lemma, we need to take a forbiddance of size $n$ and check that $2^{-n}$ is not greater than $2^{-\beta n}$,
+    multiplied by the product of factors $(1-2^{-\beta m})$ for all forbiddances intersecting with the given one.
+
+    We will split the product into parts corresponding to the different intersection points.
+    There are a total of $n$ such possible points. Furthermore, at each point, we will group the factors
+    by sizes. Then for a given point and a given size of forbiddance $m$, we will obtain no more than
+    $2^{\alpha m}$ factors of the form $(1-2^{-\beta m})$. Thus, we need to verify the inequality
+    \[
+    2^{-n}\le 2^{-\beta n}\cdot\prod_{m\ge N} (1-2^{-\beta m})^{2^{\alpha m}n}.
+    \]
+    Taking the $n$-th root, we have
+    \[
+    2^{\beta-1}\le \prod_{m\ge N} (1-2^{-\beta m})^{2^{\alpha m}}.
+    \]
+    By Bernoulli's inequality, this holds if
+    \[
+    2^{\beta-1}\le 1 - \sum_{m\ge N} 2^{\alpha m}\cdot 2^{-\beta m}.
+    \]
+    Since the left-hand side is less than $1$, and the series on the right converges, for
+    sufficiently large $N$, this inequality holds.
+
+    Analogously to the previous theorem, we can construct an infinite sequence
+    that does not violate forbiddances of large size (we first need to choose $\beta$, then
+    sufficiently large $N$, and apply Lovász's lemma to sequences
+    of arbitrary length).
+\end{proof}
+
+\begin{corollary}
+    Let $\alpha < 1$ be some positive real number.
+    There exists a sequence $w$ and a constant $N$ such that
+    \[
+    \max_{t\in F} K(F,w(F) \mid t) \ge \alpha |F|
+    \]
+    for all $F\subset\mathbb{N}$ containing at least $N$ elements.
+\end{corollary}
+
+\begin{remark}
+    In this corollary, the left side of the inequality in the Kolmogorov complexity concerning $w(F)$
+    somehow includes $F$. This is because the complexity of a subsequence
+    can be "encoded" in the set of indices: for example, in $F$ we can write
+    the indices of zeros within $w$, making $K(w(F)) = O(1)$. The maximum conditional complexity
+    on the left arises because we want to be able to "shift" the set of indices $F$
+    along the sequence, so $t$ in this case serves as something like a "reference point."
+    In this formulation, for example, the set of indices $\{2,4,6\}$ will
+    have the same complexity as $\{i, i+2, i+4\}$ for any $i$, even if the complexity of $i$ is large.
+\end{remark}
+
+Note that from this it follows, in particular, that any finite set $F$
+of size at least $N$ has an element $t$ for which
+\[
+K(w(F) \mid F, t) \ge \alpha |F| - 2K(F \mid t).
+\]
+If we omit $t$ from the left side, we get that for any sufficiently large $F$
+\[
+K(w(F) \mid F) \ge \alpha |F| - 2\max_{t\in F} K(F \mid t).
+\]
+If we consider the indices arranged in a plane, and take rectangles as $F$,
+then the term subtracted on the right will be logarithmic and can be compensated by
+$\alpha$. This leads to the statement of exercise~\ref{ex:lll:rects}.
+\begin{proof}
+    We apply theorem~\ref{thm:lll:subseq}, where for the forbiddances $(F,Z)$ the inequality
+    $K(F,Z\mid t) < \alpha|F|$ holds for all $t\in F$. Thus, for
+    each index $t$, the number of forbiddances of size $k$ that include $t$
+    does not exceed $2^{\alpha k}$.
+\end{proof}
+
+\subsubsection{``Effective'' proof of Lovász's lemma}
+All previous discussions about Lovász's lemma were non-constructive—we proved
+the existence of certain objects but did not explain how to find them. Moreover,
+in our proofs, a ``good'' object could have an exponentially small
+probability, making it unlikely to randomly ``guess'' it within a
+reasonable (polynomial) number of attempts.
+
+In this section, we will propose a very simple probabilistic algorithm
+that, with constant probability, will find a ``good'' object in polynomial time. We will consider the application of the algorithm to
+a specific problem. Suppose we need to find a binary word, given
+some set of forbiddances; in other words, we need to find a satisfying assignment for a CNF formula. We will select a random set of values for the variables. Some
+fraction of forbiddances will be violated in this case. We will take some
+forbiddance and choose values for the variables involved in it again.
+Most likely, this forbiddance will be satisfied with the new variable values,
+but some other forbiddances may be violated. If so, we will repeat the process
+for the newly violated forbiddances. And so on. Remarkably,
+this simple algorithm leads to the desired outcome.
+
+For simplicity, we will assume that all forbiddances are of the same size.
+Let the CNF contain $n$ variables and $N$ clauses of size $m$. We will consider clauses that share a common variable with the given one as neighbors. Suppose that
+each clause has no more than $t$ neighbors. If $t$ is small,
+then by Lovász's lemma, this formula is satisfiable.
+
+Since all clauses are of the same size, it is reasonable to choose
+the same $\varepsilon$ in Lovász's lemma for all events. Then we must satisfy the following inequality:
+\[
+2^{-m} \le \varepsilon(1-\varepsilon)^t.
+\]
+The right side is maximized at $\varepsilon = 1/(t+1)$, but for simplicity, we will set $\varepsilon = 1/t$.
+Thus, we have $2^{-m} \le (1-1/t)^t/t \approx 1/et$, meaning satisfiability is guaranteed when $t \le 2^m/e$.
+In the constructive proof, we will need a stronger condition $t \le 2^m/8$.
+
+\begin{theorem}[Moser, Tardos, 2009]
+    There exists a probabilistic algorithm that finds a satisfying assignment for any formula in
+    CNF with $n$ variables and $N$ clauses of size $m$, each having no more than $2^m/8$
+    neighbors, in polynomial time in terms of $n + N$ with a probability of at least $1/2$.
+\end{theorem}
+
+\begin{proof} We will assume that there is a fixed order on the clauses.
+    The algorithm will use a recursive procedure $\mathrm{Fix}(d)$:
+    \begin{quote}
+        choose random values for the variables $x$;\\
+        for all clauses $d$ of the formula:\\
+        \mbox{}\quad if $d(x) = 0$, then call $\mathrm{Fix}(d)$.
+    \end{quote}
+    For the algorithm to be correct, the procedure $\mathrm{Fix}$
+    must not violate the satisfiability of the clauses that we have already considered
+    (i.e., by the time we call $\mathrm{Fix}(d)$, all clauses to the left of $d$ must already
+    be satisfied and must remain satisfied after the call to $\mathrm{Fix}(d)$).
+
+    The body of the procedure $\mathrm{Fix}(d)$:
+    \begin{quote}
+        update $x$, choosing random values for all variables in $d$;\\
+        for all neighbors $d'$ of clause $d$:\\
+        \mbox{}\quad if $d'(x) = 0$, then call $\mathrm{Fix}(d')$.
+    \end{quote}
+    We will assume that the clause is a proper neighbor, so we do not need to
+    separately consider the case where the new variable values for $d$
+    are the same as the previous ones (i.e., the clause is not satisfied again).
+    The correctness of $\mathrm{Fix}$ follows from its definition—if it completes,
+    it cannot make other clauses unsatisfied, as it only modifies
+    the variables that are present in $d$.
+
+    It remains to show that with high probability, the process will complete in polynomial time.
+    Note that random bits in this algorithm are only used to choose initial
+    values for the variables ($n$ bits) and at each iteration of $\mathrm{Fix}$—to choose new
+    values for the variables of the clause ($m$ bits).
+
+    We will use the following observation: all random bits used up to this
+    moment in the algorithm can be reconstructed from the current values of the variables and
+    the list of clauses for which the procedure $\mathrm{Fix}$ was called. Indeed,
+    if at some points in time the procedure $\mathrm{Fix}(d)$ was called,
+    we can reconstruct the values of the variables in $d$, as the clause is not satisfied
+    only for one specific setting of the variables. Then we can start reconstructing the events
+    from the end and recover all bits used by the algorithm.
+
+    Suppose that at this moment $k$ calls to $\mathrm{Fix}$ have occurred, i.e., the algorithm
+    has used $n + km$ random bits. To reconstruct them, it is sufficient to know:
+    \begin{enumerate}
+        \item the current values of the variables,
+        \item the indices of the clauses for which $\mathrm{Fix}$ was called from the main algorithm,
+        \item which calls to $\mathrm{Fix}$ were made recursively for each of the clauses.
+    \end{enumerate}
+    For the first, $n$ bits are required; for the second, no more than $N$ bits (the indices of the clauses can
+    be specified using a bitmask). For the third, we need to describe the tree of recursive calls.
+    We will encode the tree as follows: when making a recursive call from $d$, it is sufficient to specify
+    the index of the neighbor for which we are calling, which requires $\log t$ bits. Additionally,
+    we need to distinguish between situations where a recursive call occurs in $\mathrm{Fix}$
+    (moving down the call tree) and when exiting the procedure (moving up the call tree).
+    Thus, for each transition, we will add one bit: $0$ if we exit the procedure,
+    $1$ if we move to a neighbor, and the next $\log t$ bits will be the index of the neighbor.
+
+    In total, for each vertex of the call tree, we will spend $\log t + 2$ bits. This yields $N + n + k\cdot(\log t + 2)$.
+    With a probability of $1/2$, the random bits have maximum Kolmogorov complexity, i.e.,
+    \[
+    n+k\cdot m - 1 \le K(\text{random bits}) \le N + n + k\cdot(\log t + 2) + c,
+    \]
+    which gives an upper bound on $k$, since $\log t + 2 = \log (2^m/8) + 2 = m - 1$.
+    Therefore, we have $k \le N + c + 1$, where $c$ is a constant.
+\end{proof}
 
 \newpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
