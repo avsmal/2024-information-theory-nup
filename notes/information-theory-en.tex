@@ -2348,34 +2348,38 @@ Minimizing cross-entropy loss is equivalent to maximizing the log-likelihood fun
 
 
 \section{Algorithmic Approach}
-\subsection{Kolmogorov Complexity}
-How much information is in the first $10^{10}$ digits of the number $\pi$? There is quite little, but compressing such a large number of digits, for example, using Huffman coding, will not be possible.
+\subsection{Relative Complexity}
+How much information is in the first million digits of $\pi$?
 
 \begin{definition}
-    A partial function $f:\bitstr\to\bitstr$ is called \emph{computable} if there exists a program $P$ such that:
+    A partial function $f:\bitstr\to\bitstr$ is \emph{computable} if there exists a program $P$ such that:
     \begin{itemize}
         \item for $\forall x \in \dom f$: $P(x)$ outputs $f(x)$,
         \item for $\forall x \not\in \dom f$: $P(x)$ does not halt.
     \end{itemize}
 \end{definition}
+Every computable function defines a \emph{description language}.
+Example: consider an implementation of \texttt{unzip} program such that it goes into infinite cycle if the input archive is ill-formed. Such program defines description language for all possible files (bit messages with length that is multiple of $8$).
 
 \begin{definition}
-    Let $F:\bitstr\to\bitstr$ be a computable function. The \emph{description complexity relative to $F$} is defined as
+    Let $F:\bitstr\to\bitstr$ be a computable function. The \emph{complexity of $x$ relative to (description language) $F$} is defined as
     \[K_F(x) = \min\{|p| : F(p) = x\}.\]
 \end{definition}
 
+This gives us a way to bound the complexity of the first million digits of $\pi$ relative to \texttt{unzip}: the minimum size of \texttt{zip} archive that decompresses into the first million digits of $\pi$ is of size roughly $450000$ bytes. At the same time, if instead of \texttt{unzip} we consider \texttt{python3}, then the program that prints the first million digits of $\pi$ in Python is shorter than $500$ bytes, and hence relative complexity is at most $500$ bytes.
+
 \begin{definition}
-    We say that the description method $F$ is \emph{not worse} than $G$ and denote it by $F \prec G$ if there exists a constant $c_G$ such that for $\forall x \in \bitstr$,
+    We say that the description language of $F$ is \emph{not worse} than the description language of $G$, and denote it by $F \prec G$, if there exists a constant $c_G$ such that for $\forall x \in \bitstr$,
     \[K_F(x) \le K_G(x) + c_G.\]
 \end{definition}
 
 \begin{theorem}[Solomonov-Kolmogorov]\label{thm:solomonov-kolmogorov}
-    There exists a description method (computable function) $F$ such that for any other description method $G$, the relation $F \prec G$ holds.
+    There exists a computable function $F$ such that for any other computable function $G$, the relation $F \prec G$ holds.
 \end{theorem}
 
 We will first prove a simpler statement.
 \begin{statement}
-    Let $F$ and $G$ be two description methods. Then there exists a description method $H$ such that $H \prec F$ and $H \prec G$.
+    Let $F$ and $G$ be two description languages. Then there exists a description language $H$ such that $H \prec F$ and $H \prec G$.
 \end{statement}
 
 \begin{proof}
@@ -2446,7 +2450,7 @@ The question is: can there be a length $n$ such that for all $x \in \{0,1\}^n$, 
 \end{proof}
 
 \begin{remark}
-    This statement can be strengthened by replacing "defined everywhere" with "defined for an infinite number of inputs." The proof remains the same.
+    This statement can be strengthened by replacing ``defined everywhere'' with ``defined for an infinite number of inputs.'' The proof remains the same.
 \end{remark}
 
 \begin{corollary}
@@ -2456,16 +2460,16 @@ The question is: can there be a length $n$ such that for all $x \in \{0,1\}^n$, 
 \begin{remark}
     There is a fairly simple proof of this fact based on Berry's paradox. This paradox consists of proposing to consider
     \begin{center}
-        the smallest natural number that cannot be defined\\ by a phrase of no more than fourteen Russian words.
+        The smallest positive integer not definable in under sixty letters.
     \end{center}
-    This phrase contains fourteen words and defines that very smallest number, leading to a contradiction. Similarly, assuming that such a mapping is computable, we can describe the first line $x$ for which $K(x) \ge n$ using $\log n$ bits.
+    This phrase contains 57 letters and defines that very smallest number, leading to a contradiction. Similarly, assuming that such a mapping is computable, we can describe the first string $x$ for which $K(x) \ge n$ using $\log n$ bits.
 \end{remark}
 
 \begin{corollary}
-    The optimal description method is not a function that is defined everywhere.
+    The optimal description language corresponds to a function that is undefined on some inputs.
 \end{corollary}
 
-\begin{corollary}
+\begin{corollary}[Chaitin's theorem]
     Let there be some formal theory such that we can write `$K(x) > c$'. For all sufficiently large $c$ and for all $x$, the formulas `$K(x) > c$' are unprovable (and almost all of these statements are true).
 \end{corollary}
 
@@ -2473,8 +2477,8 @@ The question is: can there be a length $n$ such that for all $x \in \{0,1\}^n$, 
     If for any $c$, there exists an $x$ such that `$K(x) > c$' is provable, then by enumerating all proofs, we can construct $x$ based on $c$.
 \end{proof}
 
-\begin{corollary}
-    The First Incompleteness Theorem of Gödel.
+\begin{corollary}[Gödel's first incompleteness theorem]
+    Any consistent formal system $F$ within which a certain amount of elementary arithmetic can be carried out is incomplete; i.e. there are statements of the language of $F$ which can neither be proved nor disproved in $F$.
 \end{corollary}
 
 \begin{remark}
@@ -2554,7 +2558,7 @@ We denote the complexity of a pair by $K(x,y) = K(\langle x,y\rangle)$, where $\
 
 \begin{theorem}
     \(
-    \forall x,y\ K(x,y) \le K(x) + K(y \mid x) + O(\log K(x,y)).
+    \forall x,y,\ K(x,y) \le K(x) + K(y \mid x) + O(\log K(x,y)).
     \)
 \end{theorem}
 
@@ -2563,7 +2567,9 @@ We denote the complexity of a pair by $K(x,y) = K(\langle x,y\rangle)$, where $\
 \end{proof}
 
 \begin{theorem}[Kolmogorov-Levin]\label{thm:kolmogorov-levin}
-    $K(x,y) = K(x) + K(y \mid x) + O(\log K(x,y))$.
+    \[
+        \forall x,y,\ |K(x,y) - K(x) - K(y \mid x)| \le O(\log K(x,y)).
+    \]
 \end{theorem}
 
 \begin{definition}

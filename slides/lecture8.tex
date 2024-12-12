@@ -1,0 +1,344 @@
+% !TeX spellcheck = en_US
+\documentclass[
+%handout,
+aspectratio=169]{beamer}
+\usetheme{default}
+
+\usepackage{tikz}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\pitem}{\pause\item}
+
+\newtheorem{statement}{Statement}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\KL}{D_{KL}}
+\DeclareMathOperator{\CE}{CE}
+\newcommand{\midd}{\parallel}
+
+
+\newenvironment{sol}{%
+    \begin{block}{}%
+        \setbeamercolor{block body}{bg=lightgray}%
+    }{
+\end{block}}
+
+\AtBeginSection[]{
+    \begin{frame}
+        \vfill
+        \centering
+        \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+            \usebeamerfont{title}\insertsectionhead\par%
+        \end{beamercolorbox}
+        \vfill
+    \end{frame}
+}
+
+
+\title{Algorithmic approach}
+\author{Alexander Smal at NUP}
+\date{11.12.2024.\\ Lecture 6}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Relative Complexity}
+How much information is in the first million digits of $\pi$?
+
+\pause
+\begin{definition}
+    A partial function $f:\bitstr\to\bitstr$ is \emph{computable} if there exists a program $P$:
+    \begin{itemize}
+        \item for $\forall x \in \dom f$: $P(x)$ outputs $f(x)$,
+        \item for $\forall x \not\in \dom f$: $P(x)$ does not halt.
+    \end{itemize}
+\end{definition}
+
+\pause
+Example: \texttt{unzip} program such that goes into infinite cycle if the input archive is ill-formed.
+
+\pause
+\begin{definition}
+    Let $F:\bitstr\to\bitstr$ be a computable function. The \emph{complexity of $x$ relative to $F$} is defined as
+    \[K_F(x) = \min\{|p| : F(p) = x\}.\]
+\end{definition}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\tikzset{
+    treenode/.style = {align=center, inner sep=0pt, text centered, font=\sffamily},
+    leaf/.style = {treenode, rectangle, draw, color=black!50, text=black, text width=1.5em, minimum height=1em},
+    vert/.style = {treenode, circle, draw, text width=1.5em, thick},
+    pbox/.style = {treenode, rectangle, draw, text width=2em, minimum height=2em, thick},
+    alice/.style = {color=red!60!black!60},
+    bob/.style   = {color=blue!60!black!60},
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov Complexity}
+\begin{definition}
+    We say that the description language of $F$ is \emph{not worse} than the description language of $G$, and denote it by $F \prec G$, if there exists a constant $c_G$ such that for $\forall x \in \bitstr$,
+    \[K_F(x) \le K_G(x) + c_G.\]
+\end{definition}
+
+\pause
+\begin{theorem}[Solomonov-Kolmogorov]\label{thm:solomonov-kolmogorov}
+    There exists a computable function $U$ such that for any other computable function $G$, the relation $U \prec G$ holds.
+\end{theorem}
+
+\begin{definition}
+    We will call $K(x) = K_U(x)$ the \emph{Kolmogorov complexity of $x$}.
+\end{definition}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Properties of Kolmogorov Complexity}
+
+    \begin{enumerate}
+    \item There exists a constant $c$ such that for all $x$, $K(x) \le |x| + c$.
+    \item There exists a constant $c$ such that for all $x$, $K(xx) \le |x| + c$.
+    \item For any optimal $F_1$ and $F_2$, it holds that $F_1 \prec F_2$ and $F_2 \prec F_1$, i.e., there exists a constant $c$ such that
+    \(
+    |K_{F_1} - K_{F_2}| \le c.
+    \)
+\end{enumerate}
+\pause
+\begin{statement}
+    For any $n$, there exists $x \in \{0,1\}^n$ such that $K(x) \ge n$ (i.e., $x$ is incompressible).
+\end{statement}
+
+\begin{statement}
+    There exists a constant $c > 0$ such that for $99\%$ of words of length $n$:
+    \[
+    n - c \le K(x) \le n + c = |x| + c.
+    \]
+\end{statement}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Incomputability of Kolmogorov Complexity}
+    \begin{statement}
+        There does not exist a computable function $f:\bitstr\to\bitstr$ that is
+        defined everywhere and satisfies $f(\bar n) = x_n$, where $K(x_n) \ge n$ ($\bar n$ denotes the binary representation of the number $n$).
+    \end{statement}
+\pause
+\begin{corollary}
+    The mapping $x \to K(x)$ is not computable.
+\end{corollary}
+\pause
+    This is similar to Berry's paradox.
+\begin{center}
+    The smallest positive integer not definable in under sixty letters.
+\end{center}
+This phrase contains 57 letters and defines that very smallest number.
+\pause
+\begin{corollary}
+The optimal description language corresponds to a function that is undefined on infinite number of inputs.
+\end{corollary}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Incomputability of Kolmogorov Complexity: corollaries}
+\begin{corollary}[Chaitin's theorem]
+    Let there be some formal theory such that we can write `$K(x) > c$'. For all sufficiently large $c$ and for all $x$, the formulas `$K(x) > c$' are unprovable (and almost all of these statements are true).
+\end{corollary}
+
+\begin{corollary}[Gödel's first incompleteness theorem]
+    Any consistent formal system $F$ within which a certain amount of elementary arithmetic can be carried out is incomplete; i.e. there are statements of the language of $F$ which can neither be proved nor disproved in $F$.
+\end{corollary}
+
+This, among other things, provides a way to generate unprovable statements with good probability.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Connection to Shannon Entropy}
+\begin{statement}\label{st:kologorov:entropy}
+    Let $x = \langle{011010010\dotso 10110}\rangle$ of length $n$ contain $p \cdot n$ ones and $(1-p) \cdot n$ zeros, then
+    \[
+    K(x) \le \left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n).
+    \]
+    \end{statement}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Connection to Shannon Entropy: proof}
+    \begin{proof}
+    Consider the following description:
+    \begin{center}
+        $\langle$number of '1's, number of '0's, index of the permutation with the given number of '1's and '0's$\rangle$.
+    \end{center}
+    The total number of permutations is
+    \[
+    \binom{n}{pn} = 2^{\left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n)}.
+    \]
+    Thus, $K(x) \le \left(p \cdot \log \frac{1}{p} + (1-p) \cdot \log \frac{1}{1-p}\right) \cdot n + O(\log n) = H(p) \cdot n + O(\log n)$.
+    \end{proof}
+    \pause
+    Note: in the proof, it is important to encode this triplet in such a way that it can be uniquely split into three parts. For example, one could double all the bits of the first components and add a separator '01'.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Conditional Kolmogorov Complexity}
+\begin{definition} The complexity of the \emph{conditional description} of $x$ given $y$ relative to $F$ is:
+    \[K_F(x \mid y) = \min\{|p| : F(p,y) = x\}.\]
+A conditional description $F$ is \emph{not worse} than a conditional description $G$, denoted $F \prec G$, if there exists a constant $c$ such that for any $x$ and $y$,
+    \[
+    K_F(x \mid y) \le K_G(x \mid y) + c.
+    \]
+\end{definition}\vspace{-5mm}
+\pause
+\begin{theorem}
+    There exists an optimal method for conditional descriptions $U$ such that for any other method of conditional description $G$, it holds that $U \prec G$.
+\end{theorem}
+\pause
+\begin{definition}
+    The complexity of $x$ given $y$ relative to the optimal method of conditional description is called the \emph{conditional Kolmogorov complexity of $x$ given $y$}, denoted $K(x \mid y)$.
+\end{definition}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties of Conditional Kolmogorov Complexity}
+    \begin{enumerate}
+    \item $K(x \mid y) \le K(x) + O(1)$.
+    \item $K(x \mid y) \le |x| + O(1)$.
+    \item There exists a constant $c$ such that for all $n$, for all $y$, for $99\%$ of words $x$ of length $n$, the following holds: \(|K(x \mid y) - n| \le c\).
+    \item $K(x \mid x) = O(1)$.
+    \item Let $f$ be a computable function. Then there exists a constant $c_f$ such that for all $x$, $K(f(x) \mid x) \le c_f$.
+\end{enumerate}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Complexity of a Pair}
+We denote the complexity of a pair by $K(x,y) = K(\langle x,y\rangle)$, where $\langle\cdot,\cdot\rangle$ is an arbitrary computable encoding of pairs.
+
+\begin{statement}
+    The following statement is \uncover<2->{\alert{false}:}
+    \[
+    \exists c\ \forall x,y,\ K(x,y) \le K(x) + K(y \mid x) + c.
+    \]
+\end{statement}\vspace{-5mm}
+
+\pause\pause
+
+\begin{theorem}
+    \[
+    \forall x,y,\ K(x,y) \le K(x) + K(y \mid x) + O(\log K(x,y)).
+    \]
+\end{theorem}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem}
+\begin{theorem}[Kolmogorov-Levin]\label{thm:kolmogorov-levin}
+    $|K(x,y) - K(x) - K(y \mid x)| \le O(\log K(x,y))$.
+\end{theorem}
+
+\begin{definition}
+    \emph{Mutual information of $x$ and $y$:}
+    \[
+    \begin{aligned}
+        I(x:y) &= K(y) - K(y \mid x),\\
+        I(y:x) &= K(x) - K(x \mid y).
+    \end{aligned}
+    \]
+\end{definition}
+
+The Kolmogorov-Levin theorem states the symmetry of mutual information.
+\[
+I(x:y) = K(x) + K(y) - K(x,y) + O(\log K(x,y)) = I(y:x).
+\]
+\vspace{-5mm}
+\begin{corollary}
+    $|I(x:y) - I(y:x)| \le O(\log K(x,y))$.
+\end{corollary}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: proof}
+    The inequality `$\le$' has already been proven. It remains to prove `$\ge$'.
+    \[
+    \underbrace{K(x)}_{m} + \underbrace{K(y \mid x)}_l \le \underbrace{K(x,y)}_n + \underbrace{O(\log K(x,y))}_{O(\log n)}.
+    \]
+    Let $S = \{(a,b) \mid K(a,b) \le n\}$. Note that $(x,y) \in S$ and $|S| \le 2^{n+1}$.\\
+    Consider $S_x = \{(x,b) \mid (x,b) \in S\}$.
+    By definition, $(x,y) \in S_x$.
+    \\We will show that
+    \[
+    l = K(y \mid x) \le \log |S_x| + O(\log n).
+    \]
+    We will enumerate the set $S$. During this enumeration, we will obtain points from $S_x$. To specify $y$, we need to indicate the index of $(x,y)$ in this enumeration. Additionally, to start such an enumeration, we need to know the number $n$. Thus,
+    \[|S_x| \ge 2^{l - c \cdot \log n} \ge 2^{l'},\]
+    where $l'$ is the nearest integer less than or equal to $l$, i.e., $l' = \lfloor l - c \cdot \log n \rfloor$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: proof (cont.)}
+    Let us look again at the enumeration of $S$. During the enumeration, we encounter ``heavy sections''—those in which the number of elements is at least $2^{l'}$. To specify the section $S_x$, we need to indicate its ordinal number in the enumeration of $S$ among all ``heavy sections''. Thus,
+    \[
+    m = K(x) \le \log(\text{\# heavy sections}) + O(\log n) + O(\log l').
+    \]
+    The number of heavy sections is at most $|S|/2^{l'}$.
+    \[
+    m = K(x) \le \log \frac{|S|}{2^{l'}} + O(\log n) = n - l + O(\log n).
+    \]
+    Thus, we obtain the statement of the theorem: $m + l \le n + O(\log n)$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: final remark}
+    Choose $n$ such that its binary representation is incompressible, i.e., $K(\bar n) = \log n + O(1)$. Take $x \in \{0,1\}^n$ such that $K(x \mid \bar n) = n + O(1)$. Then
+\begin{itemize}
+    \item\(
+    I(\bar n : x) = K(x) - K(x \mid \bar n) = n + O(1) - (n + O(1)) = O(1),
+    \)
+    \item\(
+    I(x : \bar n) = K(\bar n) - K(\bar n \mid x) = (\log n + O(1)) - O(1) = \log n + O(1).
+    \)
+\end{itemize}
+Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin theorem.
+\end{frame}
+
+\end{document}
