@@ -1,0 +1,270 @@
+% !TeX spellcheck = en_US
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{default}
+
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{tikz}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\pitem}{\pause\item}
+
+\newtheorem{statement}{Statement}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\KL}{D_{KL}}
+\DeclareMathOperator{\CE}{CE}
+\newcommand{\midd}{\parallel}
+
+
+\newenvironment{sol}{%
+    \begin{block}{}%
+        \setbeamercolor{block body}{bg=lightgray}%
+    }{
+\end{block}}
+
+\AtBeginSection[]{
+    \begin{frame}
+        \vfill
+        \centering
+        \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+            \usebeamerfont{title}\insertsectionhead\par%
+        \end{beamercolorbox}
+        \vfill
+    \end{frame}
+}
+
+
+\title{Kolmogorov-Levin Theorem and\\ Applications of Kolmogorov Complexity}
+\author{Alexander Smal at NUP}
+\date{18.12.2024.\\ Lecture 9}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem}
+\begin{theorem}[Kolmogorov-Levin]\label{thm:kolmogorov-levin}
+    $|K(x,y) - K(x) - K(y \mid x)| \le O(\log K(x,y))$.
+\end{theorem}
+
+\begin{definition}
+    \emph{Mutual information of $x$ and $y$:}
+    \[
+    \begin{aligned}
+        I(x:y) &= K(y) - K(y \mid x),\\
+        I(y:x) &= K(x) - K(x \mid y).
+    \end{aligned}
+    \]
+\end{definition}
+
+The Kolmogorov-Levin theorem states the symmetry of mutual information.
+\[
+I(x:y) = K(x) + K(y) - K(x,y) + O(\log K(x,y)) = I(y:x).
+\]
+\vspace{-5mm}
+\begin{corollary}
+    $|I(x:y) - I(y:x)| \le O(\log K(x,y))$.
+\end{corollary}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: proof}
+    The inequality `$\le$' has already been proven. It remains to prove `$\ge$'.
+    \[
+    \underbrace{K(x)}_{m} + \underbrace{K(y \mid x)}_l \le \underbrace{K(x,y)}_n + \underbrace{O(\log K(x,y))}_{O(\log n)}.
+    \]
+    Let $S = \{(a,b) \mid K(a,b) \le n\}$. Note that $(x,y) \in S$ and $|S| \le 2^{n+1}$.\\
+    Consider $S_x = \{(x,b) \mid (x,b) \in S\}$.
+    By definition, $(x,y) \in S_x$.
+    \\We will show that
+    \[
+    l = K(y \mid x) \le \log |S_x| + O(\log n).
+    \]
+    We will enumerate the set $S$. During this enumeration, we will obtain points from $S_x$. To specify $y$, we need to indicate the index of $(x,y)$ in this enumeration. Additionally, to start such an enumeration, we need to know the number $n$. Thus,
+    \[|S_x| \ge 2^{l - c \cdot \log n} \ge 2^{l'},\]
+    where $l'$ is the nearest integer less than or equal to $l$, i.e., $l' = \lfloor l - c \cdot \log n \rfloor$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: proof (cont.)}
+    Let us look again at the enumeration of $S$. During the enumeration, we encounter ``heavy sections''—those in which the number of elements is at least $2^{l'}$. To specify the section $S_x$, we need to indicate its ordinal number in the enumeration of $S$ among all ``heavy sections''. Thus,
+    \[
+    m = K(x) \le \log(\text{\# heavy sections}) + O(\log n) + O(\log l').
+    \]
+    The number of heavy sections is at most $|S|/2^{l'}$.
+    \[
+    m = K(x) \le \log \frac{|S|}{2^{l'}} + O(\log n) = n - l + O(\log n).
+    \]
+    Thus, we obtain the statement of the theorem: $m + l \le n + O(\log n)$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Kolmogorov-Levin Theorem: final remark}
+    Choose $n$ such that its binary representation is incompressible, i.e., $K(\bar n) = \log n + O(1)$. Take $x \in \{0,1\}^n$ such that $K(x \mid \bar n) = n + O(1)$. Then
+\begin{itemize}
+    \item\(
+    I(\bar n : x) = K(x) - K(x \mid \bar n) = n + O(1) - (n + O(1)) = O(1),
+    \)
+    \item\(
+    I(x : \bar n) = K(\bar n) - K(\bar n \mid x) = (\log n + O(1)) - O(1) = \log n + O(1).
+    \)
+\end{itemize}
+Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin theorem.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Infinity of the Set of Prime Numbers}
+\begin{theorem}
+    There are infinitely many prime numbers.
+\end{theorem}
+\begin{proof}
+    \begin{itemize}
+        \item Suppose there are only $m$ prime numbers: $\seqn{p}{m}$.
+        \pitem Any integer $x$ is a product of powers of these primes:
+        $
+        x = p_1^{k_1}\cdot p_2^{k_2}\cdot\dotsm\cdot p_m^{k_m},
+        $
+        \pitem $x$ is uniquely defined by the set of powers $\seqn{k}{m}$.
+
+        \pitem Each $k_i \le \log x$, so it can be described using $O(\log \log x)$ bits.
+
+        \pitem $m$ is an absolute constant, so any $x$ can be described with $O(\log \log x)$ bits.
+
+        \pitem There exist random $n$-bit numbers $x$ with complexity at least $n$.
+
+        \pitem
+        This leads to a contradiction:
+        \[
+        n \le K(x) \le O(\log \log x) = O(\log n).
+        \]
+    \end{itemize}
+\end{proof}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Method of Incompressible Objects}
+    \begin{definition}
+        \emph{Finite automaton with multiple heads}: transition function is based on
+        \begin{itemize}
+            \item the internal state of the automaton,
+            \item the symbols under the heads,
+        \end{itemize}
+        returns
+        \begin{itemize}
+            \item the next state,
+            \item and the indices of the heads to be moved,
+            \item with at least one head moving at each step.
+        \end{itemize}
+    \end{definition}
+
+    Class $\mathcal{L}_k$ is the class of languages recognized by finite automata with $k$ heads.
+
+    \begin{theorem}\label{thm:kDFA}
+        $\mathcal{L}_k \subsetneq \mathcal{L}_{k+1}$.
+    \end{theorem}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Hard Language for $k$-head Automaton}
+    Consider the following family of languages over the alphabet $\{0,1,\#\}$
+    \[
+    A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
+    \]
+    where $w_i \in \bitstr$, for all $i \in \{1,2,\dotsc,n\}$.
+
+    For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads.\pause
+
+    For $n = 3$, it can be recognized with our heads:
+    \[
+    \underset{\fbox{1}}{w_1}\#w_2\#w_3\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_2}\#\underset{\fbox{4}}{w_1}.
+    \]\pause
+    But it can also be done with three heads (can you find a trick?):\pause
+    \[
+    \underset{\fbox{1}}{w_1}\#w_2\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_3}\#w_2\#w_1.
+    \]\pause
+
+    Using the trick $k$ heads can recognize the language $A_n$ for $n \le (k-1) + \dotsb + 1$.
+    \begin{lemma}
+        $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+    \end{lemma}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof: Protocol for Automaton}
+    A pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.\medskip\pause
+
+    For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. \medskip\pause
+
+    If $n > k \cdot (k-1)/2$, then there will be a block that is not inspected by any pair of heads. Let us consider some $x \in A_n$ and assume that the block $w_\ell$ is not inspected.\medskip\pause
+
+    The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.\medskip\pause
+
+    Lets write down the \emph{protocol for the automaton on the word $x$ with parameter $\ell$}.\\
+    We record the state of the automaton each time the following events occur:
+    \begin{itemize}
+        \item entry of a head into the copy of $w_\ell$,
+        \item exit of a head from the copy of $w_\ell$.
+    \end{itemize}
+    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof: Every Block is Inspected}
+    Suppose that for a specific
+\[
+    x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
+\]
+the finite automaton does not inspect the block $\ell$.
+
+Consider the input $x'$ with a different block $w'_\ell$:
+\[
+x' = w_1\#w_2\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
+\]
+
+If the protocols are equal, then the automaton must also accept the input
+\[
+x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
+\]
+If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.\medskip
+
+    The language $A_{\frac{k \cdot (k + 1)}{2}}$ belongs to $\mathcal{L}_{k+1}$ but does not belong to $\mathcal{L}_k$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
