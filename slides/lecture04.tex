@@ -1,5 +1,9 @@
-\documentclass[handout,aspectratio=169]{beamer}
+% !TeX spellcheck = en_US
+\documentclass[aspectratio=169]{beamer}
+
 \usetheme{default}
+
+\setbeamertemplate{navigation symbols}{}
 
 \usepackage{tikz}
 
@@ -88,11 +92,11 @@
     \begin{frame}{Two variables (proof)}
 		\begin{proof}
 		    Let \(\xi_0, \xi_1, \xi_2\) be independent random variables with entropies \(t_0, t_1, t_2\) respectively. Then \(\alpha = (\xi_0, \xi_1)\) and \(\beta = (\xi_0, \xi_2)\) will be the desired variables.\bigskip
-		
+
 		    \begin{center} \mbox{}\hfill
 		    \parbox{.4\textwidth}{\centering\begin{tikzpicture}
 		    \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=2cm]
-		
+
 		    \node[circ, label=left:$\alpha$] (a) at (0,0) {};
 		    \node[circ, label=right:$\beta$] (b) at (1,0) {};
 		    \node at (-.4,0) {$\xi_1$};
@@ -141,19 +145,19 @@
 	    \begin{center}
 	    \begin{tikzpicture}[scale=0.85]
 	        \tikzstyle{circ}=[circle, draw, inner sep=0pt, minimum width=5cm]
-	
+
 	        \draw(1.2,2) circle(2.5cm) node[xshift=-3cm]{$\alpha$};
 	        \draw(3.8,2) circle(2.5cm) node[xshift=3cm] {$\beta$};
 	        \draw(2.5,-0.5) circle(2.5cm) node[yshift=-3cm] {$\gamma$};
-	
+
 	        \node at (0,2.5) {$H(\alpha \mid \beta, \gamma)$};
 	        \node at (5,2.5) {$H(\beta \mid \alpha, \gamma)$};
 	        \node at (2.5,-1.4) {$H(\gamma \mid \alpha, \beta)$};
-	
+
 	        \node at (1.1,0) {$I(\alpha : \gamma \mid \beta)$};
 	        \node at (2.5,2.7) {$I(\alpha : \beta \mid \gamma)$};
 	        \node at (3.9,0) {$I(\beta : \gamma \mid \alpha)$};
-	
+
 	        \node at (2.5,1.4) {$I(\alpha : \beta : \gamma)$};
 	    \end{tikzpicture}
 	    \end{center}
@@ -221,7 +225,7 @@
 		\begin{statement}
 		    For 4 random variables, there are infinitely many inequalities that are independent of each other.
 		\end{statement}
-		
+
     \end{frame}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -232,7 +236,7 @@
 		\[
 		    H(a \mid x) + H(a \mid y) \le H(a).
 		\]
-		
+
 		\begin{problem}
 		    If \(a, x, y\) are such that
 		\[

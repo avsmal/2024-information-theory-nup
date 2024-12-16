@@ -1,8 +1,9 @@
 % !TeX spellcheck = en_US
-\documentclass[
-%handout,
-aspectratio=169]{beamer}
+\documentclass[aspectratio=169]{beamer}
+
 \usetheme{default}
+
+\setbeamertemplate{navigation symbols}{}
 
 \usepackage{tikz}
 
@@ -51,7 +52,7 @@ aspectratio=169]{beamer}
 
 \title{Algorithmic approach}
 \author{Alexander Smal at NUP}
-\date{11.12.2024.\\ Lecture 6}
+\date{11.12.2024.\\ Lecture 8}
 
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,42 +289,6 @@ I(x:y) = K(x) + K(y) - K(x,y) + O(\log K(x,y)) = I(y:x).
 \begin{corollary}
     $|I(x:y) - I(y:x)| \le O(\log K(x,y))$.
 \end{corollary}
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Kolmogorov-Levin Theorem: proof}
-    The inequality `$\le$' has already been proven. It remains to prove `$\ge$'.
-    \[
-    \underbrace{K(x)}_{m} + \underbrace{K(y \mid x)}_l \le \underbrace{K(x,y)}_n + \underbrace{O(\log K(x,y))}_{O(\log n)}.
-    \]
-    Let $S = \{(a,b) \mid K(a,b) \le n\}$. Note that $(x,y) \in S$ and $|S| \le 2^{n+1}$.\\
-    Consider $S_x = \{(x,b) \mid (x,b) \in S\}$.
-    By definition, $(x,y) \in S_x$.
-    \\We will show that
-    \[
-    l = K(y \mid x) \le \log |S_x| + O(\log n).
-    \]
-    We will enumerate the set $S$. During this enumeration, we will obtain points from $S_x$. To specify $y$, we need to indicate the index of $(x,y)$ in this enumeration. Additionally, to start such an enumeration, we need to know the number $n$. Thus,
-    \[|S_x| \ge 2^{l - c \cdot \log n} \ge 2^{l'},\]
-    where $l'$ is the nearest integer less than or equal to $l$, i.e., $l' = \lfloor l - c \cdot \log n \rfloor$.
-
-\end{frame}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Kolmogorov-Levin Theorem: proof (cont.)}
-    Let us look again at the enumeration of $S$. During the enumeration, we encounter ``heavy sections''—those in which the number of elements is at least $2^{l'}$. To specify the section $S_x$, we need to indicate its ordinal number in the enumeration of $S$ among all ``heavy sections''. Thus,
-    \[
-    m = K(x) \le \log(\text{\# heavy sections}) + O(\log n) + O(\log l').
-    \]
-    The number of heavy sections is at most $|S|/2^{l'}$.
-    \[
-    m = K(x) \le \log \frac{|S|}{2^{l'}} + O(\log n) = n - l + O(\log n).
-    \]
-    Thus, we obtain the statement of the theorem: $m + l \le n + O(\log n)$.
-
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
