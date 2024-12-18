@@ -2646,7 +2646,7 @@ I(x:y) = K(x) + K(y) - K(x,y) + O(\log K(x,y)) = I(y:x).
 
 \subsection{Method of Incompressible Objects}
 \begin{definition}
-    \emph{Finite automaton with multiple heads} is a finite automaton where at each step the transition function, based on the internal state of the automaton and the symbols under the heads, returns the next state and the indices of the heads to be moved, with at least one head moving at each step.
+    \emph{Finite automata with multiple heads} is a finite automata where at each step the transition function, based on the internal state of the automata and the symbols under the heads, returns the next state and the indices of the heads to be moved, with at least one head moving at each step.
 \end{definition}
 
 We define the class $\mathcal{L}_k$ as the class of languages recognized by finite automata with $k$ heads.
@@ -2661,7 +2661,7 @@ A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
 \]
 where $w_i \in \bitstr$, for all $i \in \{1,2,\dotsc,n\}$.
 
-For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads (by the pumping lemma, a finite automaton with one head cannot recognize this language).
+For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads (by the pumping lemma, a finite automata with one head cannot recognize this language).
 
 For $n = 3$, it can be recognized with four heads:
 \[
@@ -2672,14 +2672,14 @@ But it can also be done with three heads (can you find a trick?):
 \underset{\fbox{1}}{w_1}\#w_2\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_3}\#w_2\#w_1.
 \]
 
-If this trick is used for $k$ heads, then one could recognize the language $A_n$ for $n \le (k-1) + (k-2) + \dotsb + 1$, i.e., $n = \frac{k \cdot (k-1)}{2}$. Thus, a finite automaton with $k$ heads recognizes the language $A_n$ for $n \le \frac{k \cdot (k-1)}{2}$.
+If this trick is used for $k$ heads, then one could recognize the language $A_n$ for $n \le (k-1) + (k-2) + \dotsb + 1$, i.e., $n = \frac{k \cdot (k-1)}{2}$. Thus, a finite automata with $k$ heads recognizes the language $A_n$ for $n \le \frac{k \cdot (k-1)}{2}$.
 
 \begin{lemma}
-    $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+    $A_n$ is not recognized by a finite automata with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
 \end{lemma}
 
 \begin{proof}
-    We say that a pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step in the operation of the finite automaton when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.
+    We say that a pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step in the operation of the finite automata when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.
 
     For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. If $n > k \cdot (k-1)/2$, then there will be a block that is not inspected by any pair of heads. Let us consider some $x \in A_n$ and assume that the block $w_\ell$ is not inspected.
 
@@ -2687,18 +2687,18 @@ If this trick is used for $k$ heads, then one could recognize the language $A_n$
         The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.
     \end{remark}
 
-    We will write the \emph{protocol of the automaton's operation on the word $x$ with the highlighted $\ell$}. We will record the state of the automaton each time the following events occur:
+    We will write the \emph{protocol of the automata's operation on the word $x$ with the highlighted $\ell$}. We will record the state of the automata each time the following events occur:
     \begin{itemize}
         \item entry of a head into the copy of $w_\ell$,
         \item exit of a head from the copy of $w_\ell$.
     \end{itemize}
-    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+    The state of the automata will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
 
     Suppose that for a specific $x$
     \[
     x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
     \]
-    the finite automaton does not inspect the block $\ell$. Consider the input $x'$ with a different block $w'_\ell$:
+    the finite automata does not inspect the block $\ell$. Consider the input $x'$ with a different block $w'_\ell$:
     \[
     x' = w_1\#w_2\#\dotsb\#w'_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
     \]
@@ -2708,11 +2708,11 @@ If this trick is used for $k$ heads, then one could recognize the language $A_n$
     \end{statement}
 
     \begin{proof}
-        If the protocols are equal, then the automaton must also accept the input
+        If the protocols are equal, then the automata must also accept the input
         \[
         x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w'_\ell\#\dotsb\#w_1.
         \]
-        If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.
+        If some heads are in $w_\ell$, then the automata operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automata operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.
     \end{proof}
 
     We have shown that for different $x$ we must have different protocols. Thus, knowing $\ell$ and the protocol, we can recover $w_\ell$—to do this, we need to know all other blocks and the protocol.
