@@ -173,9 +173,9 @@ Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Method of Incompressible Objects}
     \begin{definition}
-        \emph{Finite automaton with multiple heads}: transition function is based on
+        \emph{Finite automata with multiple heads}: transition function is based on
         \begin{itemize}
-            \item the internal state of the automaton,
+            \item the internal state of the automata,
             \item the symbols under the heads,
         \end{itemize}
         returns
@@ -197,7 +197,7 @@ Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin t
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}[fragile]{Hard Language for $k$-head Automaton}
+\begin{frame}[fragile]{Hard Language for $k$-head Automata}
     Consider the following family of languages over the alphabet $\{0,1,\#\}$
     \[
     A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
@@ -217,14 +217,14 @@ Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin t
 
     Using the trick $k$ heads can recognize the language $A_n$ for $n \le (k-1) + \dotsb + 1$.
     \begin{lemma}
-        $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+        $A_n$ is not recognized by a finite automata with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
     \end{lemma}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Proof: Protocol for Automaton}
+\begin{frame}{Proof: Protocol for Automata}
     A pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.\medskip\pause
 
     For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. \medskip\pause
@@ -233,38 +233,62 @@ Thus, it is not possible to reduce the logarithmic gap in the Kolmogorov-Levin t
 
     The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.\medskip\pause
 
-    Lets write down the \emph{protocol for the automaton on the word $x$ with parameter $\ell$}.\\
-    We record the state of the automaton each time the following events occur:
+    Lets write down the \emph{protocol for the automata on the word $x$ with parameter $\ell$}.\\
+    We record the state of the automata each time the following events occur:
     \begin{itemize}
         \item entry of a head into the copy of $w_\ell$,
         \item exit of a head from the copy of $w_\ell$.
     \end{itemize}
-    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+    The state of the automata will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
 
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Proof: Every Block is Inspected}
+\begin{frame}{Proof: Protocols Defines Blocks}
     Suppose that for a specific
 \[
     x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
 \]
-the finite automaton does not inspect the block $\ell$.
+the finite automata does not inspect the block $\ell$.
 
 Consider the input $x'$ with a different block $w'_\ell$:
 \[
 x' = w_1\#w_2\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
 \]
 
-If the protocols are equal, then the automaton must also accept the input
+If the protocols are equal, then the automata must also accept the input
 \[
 x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
 \]
-If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.\medskip
+If some heads are in $w_\ell$, then the automata operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automata operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$.
 
-    The language $A_{\frac{k \cdot (k + 1)}{2}}$ belongs to $\mathcal{L}_{k+1}$ but does not belong to $\mathcal{L}_k$.
+Hence, different $w_\ell$ correspond for different protocols.
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof: Contradiction}
+    Our observation can be rewritten as follows:
+    \[
+    K(w_\ell \mid w_1,\dots,w_{\ell-1},w_{\ell+1},\dotsc,w_n,\ell,\pi(x,\ell)) = O(1).
+    \]
+
+    Assume that all blocks have length $N$. Furthermore, we require that $x$ is incompressible, i.e., $K(x) = K(w_1,w_2,\dotsc,w_n) \ge n \cdot N$.
+    Then,
+    \[
+    n \cdot N \le K(w_1,\dotsc,w_n) \le
+    \underbrace{(n-1) \cdot N}_{\{w_i\}_{i \neq \ell}} +
+    \underbrace{O(\log n)}_{\ell} +
+    \underbrace{4 \cdot k \cdot O(k \log n N)}_{\text{complexity}\ \pi(x,\ell)}.
+    \]
+    As $N \to \infty$, we obtain a contradiction: $n \cdot N \le (n-1)N + O(k^2 \log n N)$.\medskip
+
+The language $A_{\frac{k \cdot (k + 1)}{2}}$ belongs to $\mathcal{L}_{k+1}$ but does not belong to $\mathcal{L}_k$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 \end{document}
