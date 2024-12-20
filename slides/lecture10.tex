@@ -1,0 +1,281 @@
+% !TeX spellcheck = en_US
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme{default}
+
+\setbeamertemplate{navigation symbols}{}
+
+\usepackage{tikz}
+
+\usepackage{amsmath,amssymb}
+
+\newcommand{\pitem}{\pause\item}
+
+\newtheorem{statement}{Statement}
+
+\newcommand{\bits}{\{0,1\}}
+\newcommand{\bitstr}{\bits^*}
+\newcommand{\sshalf}{{\textstyle\frac12}}
+\newcommand{\seqn}[2]{{#1}_1,{#1}_2,\dotsc,{#1}_{#2}}
+\newcommand{\seqin}[3]{{#1}_{{#2}_1},{#1}_{{#2}_2},\dotsc,{#1}_{{#2}_{#3}}}
+\newcommand{\IC}{\mathrm{IC}}
+\newcommand{\poly}{\mathrm{poly}}
+\newcommand{\Nat}{\mathbb{N}}
+
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\rng}{rng}
+\DeclareMathOperator*{\E}{\mathbb{E}}
+
+\DeclareMathOperator{\KL}{D_{KL}}
+\DeclareMathOperator{\CE}{CE}
+\newcommand{\midd}{\parallel}
+
+
+\newenvironment{sol}{%
+    \begin{block}{}%
+        \setbeamercolor{block body}{bg=lightgray}%
+    }{
+\end{block}}
+
+\AtBeginSection[]{
+    \begin{frame}
+        \vfill
+        \centering
+        \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=true]{title}
+            \usebeamerfont{title}\insertsectionhead\par%
+        \end{beamercolorbox}
+        \vfill
+    \end{frame}
+}
+
+
+\title{Kolmogorov Complexity and Randomness}
+\author{Alexander Smal at NUP}
+\date{09.01.2025.\\ Lecture 10}
+
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Definition of Randomness}
+Consider infinite a sequence $\bar{x} = x_1 x_2 x_3 \dotso x_n \dotso$. \\\pause
+What properties do we expect from a random $\bar x$?\\\pause
+A natural definition would be of the form $\forall n,\ K(x_1 x_2 x_3 \dotso x_n) \ge n - c$.
+\medskip\pause
+
+    For any sequence $\bar{x} = x_1 x_2 x_3 \dotso x_n \dotso$, there exists an $n$ such that
+    \[
+    K(x_1, \dotsc, x_n) \le n - \log n + O(1).
+    \]
+    (i.e., for any $c$, there exists a prefix such that $K(x_1, \dotsc, x_n) \le n - c$).
+\medskip\pause
+
+    Take some prefix of length $k$ and interpret it as the binary representation of some number $m$ (adding a leading one), and consider its continuation of length $m$:
+    \[
+    \underbrace{1 x_1 x_2 x_3 \dotso x_k}_{\overline{m}}
+    \underbrace{x_{k+1} \dotso x_{k + m}}_y,
+    \]
+    where $|y| = m$. Let $n = m + k$. Then it is claimed that
+    \[
+    K(x_1 \dotso x_{m+k}) \le K(y) + O(1) \le m + O(1) \le n - k + O(1) \le n - \log n + O(1).
+    \]
+    Knowing the string $y$, one can determine $m = |y|$ and output $\overline{m}y$ w/o leading 1.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Prefix Kolmogorov Complexity}
+    \begin{definition}
+        \emph{Prefix complexity of $x$ relative to $F$}:
+        \[
+        KP_F(x) = \min \{|p| : F(p) = x\},
+        \]
+        where $F$ is a function defined on a (non)prefix domain, i.e., if $F(p_1)$ and $F(p_2)$ are defined, then $p_1 \not\sqsubset p_2$.
+    \end{definition}
+    \begin{definition}
+        A non-prefix method of describing $F$ is \emph{not worse} than a non-prefix method of describing $G$, denoted $F \prec G$, if $\exists c \, \forall x, \, KP_F(x) \le KP_G(x) + c$.
+    \end{definition}
+    \begin{theorem}
+        There exists an optimal method of non-prefix description $UP$.
+    \end{theorem}
+
+    \begin{definition}
+        $KP(x) = KP_{UP}(x)$ is called \emph{prefix Kolmogorov complexity of $x$}.
+    \end{definition}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof of Theorem}
+    \textbf{Problem:} not all programs have a non-prefix domain of definition. \\\medskip
+
+    One can transform any program $\pi_i$ into a program with a non-prefix domain $\pi'_i$:
+    \begin{itemize}
+        \item if $\pi_i$ computes a function $F_i$ with a non-prefix domain, then $\pi'_i$ also computes $F_i$,
+        \item if $\pi_i$ computes something else, then $\pi'_i$ computes some function with a non-prefix domain (the domain can be empty).
+    \end{itemize}
+    After this, we will use a construction similar to Solomonov-Kolmogorov Theorem:
+    $UP(\underbrace{11\dotso 1}_n 0p) = \pi_n'(p)$.
+
+    The program $\pi_n'$ on input $p$ runs program $\pi_n$ in parallel on all inputs:
+    \[\pi_n(0), \pi_n(1), \pi_n(00), \pi_n(01), \dotsc, \pi_n(p), \dotsc\]
+    If at any point it discovers that $\pi_n$ has a non-prefix domain, then $\pi'(p)$ enters a loop.
+    If at any point $\pi(p)$ halts and no violation of non-prefixity has been detected, then $\pi'(p) = \pi(p)$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties of Prefix Kolmogorov Complexity}
+\begin{statement}
+    The prefix Kolmogorov complexity has the following properties:
+    \begin{itemize}
+        \item $KP(x,y) \le KP(x) + KP(y) + O(1)$.
+        \item $KP(x) \le K(x) + 2\log K(x) + O(1)$.
+        \item $\sum_{x \in \{0,1\}^k} 2^{-KP(x)} \le 1$.
+    \end{itemize}
+\end{statement}
+\begin{proof}\mbox{}
+    \begin{itemize}
+        \item As the programs are prefix-free now, we can just concatenate it.
+        \item The term $2\log K(x)$ arises from the transformation of the string $p$ into a non-prefix string $p' = \overline{\overline{|p|}}01p$.
+        \item Similarly to the Kraft-MacMillan inequality for prefix codes.
+    \end{itemize}
+\end{proof}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Martin-Löf Random Sequences}
+    A sequence $\bar{x} = x_1 x_2 \dotso x_n \dotso$ is \emph{Martin-Löf random} if $\exists c \, \forall n, \, KP(x_1 \dotso x_n) \ge n - c$.
+    \pause
+    \begin{theorem}
+        Almost all sequences $\bar{x} = x_1 x_2 \dotso x_n \dotso$ are Martin-Löf random, i.e., non-random sequences have measure 0 according to Bernoulli measure.
+    \end{theorem}
+    \pause
+    \begin{statement}
+        The following properties hold for Martin-Löf random sequences:
+        \begin{itemize}
+            \item Every Martin-Löf random sequence is non-computable.
+            \item If $\bar{x}$ is Martin-Löf random, then
+            $
+            \lim_{n\to\infty} \frac{\text{number of ones}}{n} = \frac{1}{2}.
+            $
+        \end{itemize}
+    \end{statement}
+    \pause
+    \begin{theorem}[Law of Large Numbers in Hardy-Littlewood Form]
+        For almost all sequences $\bar{x} = x_1 x_2 \dotso x_n \dotso$ (with probability 1)
+        \[
+        \left|\frac{x_1 + x_2 + \dotsb + x_n}{n} - \frac{1}{2}\right| =
+        O\left(\sqrt{\frac{\ln n}{n}}\right).
+        \]
+    \end{theorem}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Method of Incompressible Objects}
+    \begin{definition}
+        \emph{Finite automaton with multiple heads}: transition function is based on
+        \begin{itemize}
+            \item the internal state of the automaton,
+            \item the symbols under the heads,
+        \end{itemize}
+        returns
+        \begin{itemize}
+            \item the next state,
+            \item and the indices of the heads to be moved,
+            \item with at least one head moving at each step.
+        \end{itemize}
+    \end{definition}
+
+    Class $\mathcal{L}_k$ is the class of languages recognized by finite automata with $k$ heads.
+
+    \begin{theorem}\label{thm:kDFA}
+        $\mathcal{L}_k \subsetneq \mathcal{L}_{k+1}$.
+    \end{theorem}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}[fragile]{Hard Language for $k$-head Automaton}
+    Consider the following family of languages over the alphabet $\{0,1,\#\}$
+    \[
+    A_n = \{w_1\#w_2\#\dotsb\#w_n\#w_n\#\dotsb\#w_1 \mid w_i \in \bitstr\},
+    \]
+    where $w_i \in \bitstr$, for all $i \in \{1,2,\dotsc,n\}$.
+
+    For $n = 1$, the language $A_1 = \{w_1\#w_1\}$ requires two heads.\pause
+
+    For $n = 3$, it can be recognized with our heads:
+    \[
+    \underset{\fbox{1}}{w_1}\#w_2\#w_3\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_2}\#\underset{\fbox{4}}{w_1}.
+    \]\pause
+    But it can also be done with three heads (can you find a trick?):\pause
+    \[
+    \underset{\fbox{1}}{w_1}\#w_2\#\underset{\fbox{2}}{w_3}\#\underset{\fbox{3}}{w_3}\#w_2\#w_1.
+    \]\pause
+
+    Using the trick $k$ heads can recognize the language $A_n$ for $n \le (k-1) + \dotsb + 1$.
+    \begin{lemma}
+        $A_n$ is not recognized by a finite automaton with $k$ heads if $n > \frac{k \cdot (k-1)}{2}$.
+    \end{lemma}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof: Protocol for Automaton}
+    A pair of heads $(i,j)$ \emph{inspects} $w_\ell$ if there is a step when the $i$-th head reads a symbol from the left copy of $w_\ell$ and the $j$-th head reads a symbol from the right copy of $w_\ell$.\medskip\pause
+
+    For any $x \in A_n$ and for any pair $(i,j)$, there exists at most one block $w_\ell$ such that the pair $(i,j)$ inspects $w_\ell$. \medskip\pause
+
+    If $n > k \cdot (k-1)/2$, then there will be a block that is not inspected by any pair of heads. Let us consider some $x \in A_n$ and assume that the block $w_\ell$ is not inspected.\medskip\pause
+
+    The block $w_\ell$ is not inspected, so as long as some heads are in the left copy of $w_\ell$, no heads can be in the right copy of $w_\ell$.\medskip\pause
+
+    Lets write down the \emph{protocol for the automaton on the word $x$ with parameter $\ell$}.\\
+    We record the state of the automaton each time the following events occur:
+    \begin{itemize}
+        \item entry of a head into the copy of $w_\ell$,
+        \item exit of a head from the copy of $w_\ell$.
+    \end{itemize}
+    The state of the automaton will be described by its internal state and the positions of all heads. We denote such a protocol by $\pi(x,\ell)$.
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Proof: Every Block is Inspected}
+    Suppose that for a specific
+\[
+    x = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#w_\ell\#\dotsb\#w_1,
+\]
+the finite automaton does not inspect the block $\ell$.
+
+Consider the input $x'$ with a different block $w'_\ell$:
+\[
+x' = w_1\#w_2\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
+\]
+
+If the protocols are equal, then the automaton must also accept the input
+\[
+x'' = w_1\#w_2\#\dotsb\#w_\ell\#\dotsb\#w_n\#w_n\#\dotsb\#\alert{w'_\ell}\#\dotsb\#w_1.
+\]
+If some heads are in $w_\ell$, then the automaton operates on $x''$ as it does on input $x$. If some heads are in $w'_\ell$, then the automaton operates as it does on input $x'$. Therefore, it must accept $x'' \not\in A_n$. This leads us to a contradiction.\medskip
+
+    The language $A_{\frac{k \cdot (k + 1)}{2}}$ belongs to $\mathcal{L}_{k+1}$ but does not belong to $\mathcal{L}_k$.
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}
